@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100" role="img" aria-label="BOX">
+  <title>BOX</title>
+  <!-- El icono: la O-caja del logo sola, sobre la pared blanca -->
+  <rect width="100" height="100" rx="18" fill="#F4F1EC"/>
+  <g fill="#141414" transform="translate(21.5 10) scale(.8) translate(-76 0)">
+    <path d="M111 0H90Q76 0 76 14V86Q76 100 90 100H111Z"/>
+    <path d="M115 0H136Q150 0 150 14V86Q150 100 136 100H115Z"/>
+  </g>
+</svg>

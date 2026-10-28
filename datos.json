@@ -1,0 +1,14 @@
+{
+  "_como": "Datos del negocio en un solo sitio. Lo que no se sabe va marcado; al confirmarlo, cambiar aquí y ejecutar node construir.mjs. telefono_tel vacío = WhatsApp y llamar avisan de que falta el número.",
+  "nombre": "BOX",
+  "calle": "Rúa do Hórreo",
+  "localidad": "Carballo",
+  "provincia": "A Coruña",
+  "cp": "15100",
+  "direccion_corta": "Rúa do Hórreo · Carballo",
+  "telefono": "[teléfono]",
+  "telefono_tel": "",
+  "horario": "Horario por confirmar",
+  "instagram": "https://www.instagram.com/boxhorreo/",
+  "facebook": "https://www.facebook.com/p/Box-Horreo-100065150634786/"
+}

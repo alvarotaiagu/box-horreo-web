@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 245 100" width="245" height="100" role="img" aria-label="BOX">
+  <title>BOX</title>
+  <!-- Logo «La O es una caja»: el rótulo de la pared de BOX (letras macizas en bloque, redibujadas de las fotos)
+       con la O hecha caja vista de frente, partida por la ranura en dos solapas. Una sola tinta: currentColor / #141414. -->
+  <g fill="#141414">
+    <path d="M0 0H20V100H0Z"/>
+    <path d="M24 0H44Q62 0 62 18V28Q62 46 44 46H24Z"/>
+    <path d="M24 50H46Q66 50 66 70V80Q66 100 46 100H24Z"/>
+    <path d="M111 0H90Q76 0 76 14V86Q76 100 90 100H111Z"/>
+    <path d="M115 0H136Q150 0 150 14V86Q150 100 136 100H115Z"/>
+    <path d="M165 0H193L245 100H217Z"/>
+    <path d="M231 0H245L225.2 30H211.2Z"/>
+    <path d="M184.8 70H198.8L179 100H165Z"/>
+  </g>
+</svg>

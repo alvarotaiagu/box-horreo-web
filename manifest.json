@@ -1,0 +1,13 @@
+{
+  "name": "BOX · rúa do Hórreo, Carballo",
+  "short_name": "BOX",
+  "lang": "es",
+  "start_url": "./",
+  "display": "browser",
+  "background_color": "#F4F1EC",
+  "theme_color": "#F4F1EC",
+  "icons": [
+    { "src": "marca/icono-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "marca/favicon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}

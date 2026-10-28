@@ -1,0 +1,115 @@
+<section class="esp" id="invitada" aria-labelledby="esp-tit">
+  <div class="env esp-in">
+    <header class="esp-cab">
+      <p class="esp-ante">Invitada y fiesta</p>
+      <h2 id="esp-tit">Pásale la mano al espejo</h2>
+      <p class="esp-lead">Este es su probador de verdad: la cortina de terciopelo berenjena y el espejo dorado de la tienda. Está empañado; pasa el dedo o el cursor y aparece el look.</p>
+    </header>
+
+    <div class="esp-pieza" id="esp-pieza">
+      <div class="esp-escena">
+        <!-- marco dorado labrado (viewBox -24 -64 448 660; cristal 0..400 x 0..560) -->
+        <div class="esp-espejo" id="esp-espejo" tabindex="0" role="group" aria-label="Espejo del probador. Pasa el cursor o el dedo para limpiar el vaho. Con el teclado, Intro lo limpia y las flechas izquierda y derecha cambian de prenda.">
+          <div class="esp-cristal esp--cargando" id="esp-cristal">
+            <picture class="esp-foto" id="esp-foto">
+              <source type="image/avif" id="esp-src-avif">
+              <source type="image/webp" id="esp-src-webp">
+              <img id="esp-img" alt="" decoding="async">
+            </picture>
+            <canvas class="esp-vaho" id="esp-vaho" aria-hidden="true"></canvas>
+            <div class="esp-reflejo" aria-hidden="true"></div>
+          </div>
+          <svg class="esp-marco" viewBox="-24 -64 448 660" aria-hidden="true" focusable="false">
+            <defs>
+              <linearGradient id="esp-oro" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="400" y2="560">
+                <stop offset="0" stop-color="#7d5d1d"/><stop offset=".16" stop-color="#e9d189"/><stop offset=".33" stop-color="#b8963e"/>
+                <stop offset=".5" stop-color="#fff0bb"/><stop offset=".64" stop-color="#b8963e"/><stop offset=".83" stop-color="#7d5d1d"/><stop offset="1" stop-color="#d9be77"/>
+              </linearGradient>
+              <linearGradient id="esp-oroV" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="560">
+                <stop offset="0" stop-color="#f3e2ae"/><stop offset=".4" stop-color="#b8963e"/><stop offset=".7" stop-color="#8a6a22"/><stop offset="1" stop-color="#cdb06a"/>
+              </linearGradient>
+              <linearGradient id="esp-labio" gradientUnits="userSpaceOnUse" x1="0" y1="60" x2="0" y2="500">
+                <stop offset="0" stop-color="#0f0509" stop-opacity=".85"/><stop offset=".5" stop-color="#1e0d16" stop-opacity=".55"/><stop offset="1" stop-color="#0f0509" stop-opacity=".8"/>
+              </linearGradient>
+              <pattern id="esp-talla" width="20" height="20" patternUnits="userSpaceOnUse">
+                <path d="M3 17C3 9 10 11 10 3M10 3C10 11 17 9 17 17" fill="none" stroke="#f7e6b0" stroke-width="1.4" opacity=".75" transform="translate(.9 .9)"/>
+                <path d="M3 17C3 9 10 11 10 3M10 3C10 11 17 9 17 17" fill="none" stroke="#5c4413" stroke-width="1.7"/>
+                <circle cx="10" cy="3.4" r="1.5" fill="#5c4413"/>
+              </pattern>
+              <radialGradient id="esp-brillo" gradientUnits="userSpaceOnUse" cx="120" cy="120" r="190"><stop offset="0" stop-color="#fffbe3" stop-opacity=".95"/><stop offset=".45" stop-color="#fff0bb" stop-opacity=".35"/><stop offset="1" stop-color="#fff0bb" stop-opacity="0"/></radialGradient>
+              <path id="esp-bandas" fill-rule="evenodd" d="M0 560V200A200 200 0 0 1 400 200V560ZM18 542V200A182 182 0 0 1 382 200V542ZM38 522V200A162 162 0 0 1 362 200V522ZM61 499V200A139 139 0 0 1 339 200V499Z"/>
+              <path id="esp-petalo" d="M0 0C-11-14-10-40 0-58C10-40 11-14 0 0Z"/>
+              <g id="esp-rosa">
+                <circle r="15" fill="url(#esp-oro)" stroke="#5c4413" stroke-width="1.2"/>
+                <g fill="#5c4413"><circle cx="0" cy="-10.5" r="2.2"/><circle cx="7.4" cy="-7.4" r="2.2"/><circle cx="10.5" cy="0" r="2.2"/><circle cx="7.4" cy="7.4" r="2.2"/><circle cx="0" cy="10.5" r="2.2"/><circle cx="-7.4" cy="7.4" r="2.2"/><circle cx="-10.5" cy="0" r="2.2"/><circle cx="-7.4" cy="-7.4" r="2.2"/></g>
+                <circle r="5" fill="#f3e2ae" stroke="#5c4413" stroke-width="1"/>
+              </g>
+              <g id="esp-voluta">
+                <path d="M0 0C-8-16-34-20-38-2C-41 14-18 18-15 5C-13-4-25-6-26 1" fill="none" stroke="#5c4413" stroke-width="7.4" stroke-linecap="round"/>
+                <path d="M0 0C-8-16-34-20-38-2C-41 14-18 18-15 5C-13-4-25-6-26 1" fill="none" stroke="url(#esp-oroV)" stroke-width="5" stroke-linecap="round"/>
+                <path d="M-4-9C-14-16-28-14-33-5" fill="none" stroke="#fff3c9" stroke-width="1.3" stroke-linecap="round" opacity=".8"/>
+              </g>
+            </defs>
+            <!-- cresta -->
+            <g transform="translate(200 6)">
+              <g stroke="#5c4413" stroke-width="1.2" fill="url(#esp-oroV)">
+                <use href="#esp-petalo" transform="rotate(-80) scale(.82)"/><use href="#esp-petalo" transform="rotate(80) scale(.82)"/>
+                <use href="#esp-petalo" transform="rotate(-60) scale(.94)"/><use href="#esp-petalo" transform="rotate(60) scale(.94)"/>
+                <use href="#esp-petalo" transform="rotate(-40)"/><use href="#esp-petalo" transform="rotate(40)"/>
+                <use href="#esp-petalo" transform="rotate(-20) scale(1.04)"/><use href="#esp-petalo" transform="rotate(20) scale(1.04)"/>
+                <use href="#esp-petalo" transform="scale(1.08)"/>
+              </g>
+              <g stroke="#5c4413" stroke-width="1" opacity=".7" fill="none">
+                <path d="M0-8V-46"/><path d="M-12-6L-26-40M12-6L26-40" transform="scale(.9)"/><path d="M-22-4L-44-30M22-4L44-30" transform="scale(.82)"/>
+              </g>
+              <circle r="12" fill="url(#esp-oro)" stroke="#5c4413" stroke-width="1.3"/><circle r="5" fill="#7a1f3d" stroke="#f3e2ae" stroke-width="1.4"/>
+            </g>
+            <g transform="translate(60 60) rotate(-45)"><use href="#esp-voluta"/></g>
+            <g transform="translate(340 60) rotate(45) scale(-1 1)"><use href="#esp-voluta"/></g>
+            <path d="M0 560V200A200 200 0 0 1 400 200V560ZM18 542V200A182 182 0 0 1 382 200V542Z" fill-rule="evenodd" fill="url(#esp-oro)"/>
+            <path d="M23 537V200A177 177 0 0 1 377 200V537Z" fill="none" stroke="#4a360c" stroke-width="3.4" opacity=".75"/>
+            <path d="M30 530V200A170 170 0 0 1 370 200V530Z" fill="none" stroke="#5c4413" stroke-width="7.4" stroke-linecap="round" stroke-dasharray="0 9.6"/>
+            <path d="M30 530V200A170 170 0 0 1 370 200V530Z" fill="none" stroke="url(#esp-oro)" stroke-width="5.6" stroke-linecap="round" stroke-dasharray="0 9.6"/>
+            <path d="M38 522V200A162 162 0 0 1 362 200V522ZM57 503V200A143 143 0 0 1 343 200V503Z" fill-rule="evenodd" fill="url(#esp-oroV)"/>
+            <path d="M38 522V200A162 162 0 0 1 362 200V522ZM57 503V200A143 143 0 0 1 343 200V503Z" fill-rule="evenodd" fill="url(#esp-talla)"/>
+            <path d="M57 503V200A143 143 0 0 1 343 200V503ZM61 499V200A139 139 0 0 1 339 200V499Z" fill-rule="evenodd" fill="#f1dca0"/>
+            <path d="M61 499V200A139 139 0 0 1 339 200V499ZM68 492V200A132 132 0 0 1 332 200V492Z" fill-rule="evenodd" fill="url(#esp-labio)"/>
+            <use href="#esp-rosa" x="0" y="200"/><use href="#esp-rosa" x="400" y="200"/>
+            <use href="#esp-rosa" x="6" y="554"/><use href="#esp-rosa" x="394" y="554"/>
+            <path d="M150 560H250C250 576 232 580 224 590C214 600 200 600 200 600C200 600 186 600 176 590C168 580 150 576 150 560Z" fill="url(#esp-oro)" stroke="#5c4413" stroke-width="1.3"/>
+            <path d="M170 566H230M178 574H222" stroke="#5c4413" stroke-width="1.1" opacity=".6" fill="none"/>
+            <circle cx="200" cy="584" r="5" fill="#7a1f3d" stroke="#f3e2ae" stroke-width="1.3"/>
+            <use href="#esp-bandas" fill="url(#esp-brillo)" id="esp-brillo-u"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="esp-panel">
+        <p class="esp-cuenta" id="esp-cuenta"></p>
+        <h3 class="esp-nombre" id="esp-nombre"></h3>
+        <p class="esp-marca" id="esp-marca" hidden></p>
+        <p class="esp-txt" id="esp-txt"></p>
+        <p class="esp-precio" id="esp-precio"></p>
+        <p class="esp-aviso" id="esp-aviso" hidden></p>
+
+        <div class="esp-mandos">
+          <button type="button" class="esp-fl" id="esp-prev" aria-label="Prenda anterior"><span aria-hidden="true">&#8592;</span></button>
+          <button type="button" class="esp-fl" id="esp-next" aria-label="Prenda siguiente"><span aria-hidden="true">&#8594;</span></button>
+          <button type="button" class="esp-limpiar" id="esp-limpiar">Limpiar el espejo</button>
+        </div>
+
+        <button type="button" class="esp-res" id="esp-res">Resérvalo para probártelo</button>
+
+        <ul class="esp-minis" id="esp-minis" aria-label="Todas las prendas de invitada y fiesta"></ul>
+        <p class="esp-ayuda" id="esp-ayuda">El vaho vuelve poco a poco si dejas el espejo quieto.</p>
+        <p class="esp-sr" id="esp-voz" aria-live="polite" aria-atomic="true"></p>
+      </div>
+    </div>
+
+    <!-- solo en la densidad sobria: sin vaho, todas las prendas de un vistazo -->
+    <div class="esp-lista" id="esp-lista" hidden>
+      <h3 class="esp-lista-tit">Todas las prendas de invitada y fiesta</h3>
+      <div class="esp-lista-grupos" id="esp-lista-grupos"></div>
+    </div>
+  </div>
+</section>

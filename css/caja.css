@@ -1,0 +1,196 @@
+/* BOX · «Prepárame una caja» (#reservar). Caja blanca lacada sobre la pared blanca: se distingue por la sombra y el filo.
+   La caja es la O del logo: una caja de frente partida por una ranura en dos solapas. */
+.caja {
+  --caja-lacado: #FDFCFA;
+  --caja-filo: color-mix(in srgb, var(--tinta) 16%, transparent);
+  --caja-sombra: 0 1px 0 rgba(255, 255, 255, .9) inset, 0 16px 28px -16px rgba(20, 20, 20, .38), 0 2px 5px rgba(20, 20, 20, .12);
+  --caja-bandeja-alto: 96px;
+  padding-block: var(--sec-y) clamp(40px, 6vw, 80px);
+  background: var(--pared);
+  color: var(--tinta);
+}
+.caja-cab { display: grid; gap: 14px; max-width: 62ch; margin-bottom: clamp(20px, 3vw, 32px); }
+.caja-cab h2 { font-size: clamp(2.3rem, 7vw, 4.6rem); }
+.caja-intro { color: var(--tinta-2); font-size: 1.0625rem; }
+.caja-sellos { display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center; font-size: .875rem; }
+.caja-sellos .marca-sim { border: 1px solid currentColor; padding: 6px 10px; border-radius: 999px; }
+
+/* pasos */
+.caja-pasos { list-style: none; margin: 0 0 clamp(18px, 3vw, 30px); padding: 0; display: flex; gap: 6px; }
+.caja-pasos li { flex: 1 1 0; min-width: 0; display: flex; align-items: center; gap: 8px; padding-top: 10px; border-top: 2px solid var(--linea); color: var(--suave); font: 600 .8125rem/1.2 var(--f-texto); }
+.caja-pasos li.hecho { border-top-color: var(--azul); color: var(--tinta-2); }
+.caja-pasos li[aria-current] { border-top-color: var(--azul-texto); color: var(--tinta); }
+.caja-num { flex: none; width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; border: 1.5px solid currentColor; font-size: .75rem; }
+.caja-pasos li[aria-current] .caja-num { background: var(--tinta); border-color: var(--tinta); color: var(--pared); }
+.caja-pasonom { display: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.caja-pasos li[aria-current] .caja-pasonom { display: block; }
+@media (min-width: 640px) { .caja-pasonom { display: block; } }
+
+/* cuerpo: paneles + bandeja */
+.caja-cuerpo { display: block; }
+.caja-paso { scroll-margin-top: calc(var(--cab-alto) + 12px); display: grid; gap: 16px; align-content: start; padding-bottom: 24px; }
+.caja-paso[hidden] { display: none; }
+.caja-paso h3 { font-size: clamp(1.5rem, 4.6vw, 2.2rem); outline-offset: 6px; scroll-margin-top: calc(var(--cab-alto) + 12px); }
+.caja-ayuda { color: var(--tinta-2); max-width: 60ch; font-size: 1rem; }
+.caja-carga { padding: 24px 0; color: var(--suave); list-style: none; }
+
+.caja-acciones { display: flex; flex-wrap: wrap; gap: 10px; }
+.caja-acciones .btn { min-height: 48px; flex: 1 1 160px; }
+.caja-escribe { font-size: .9375rem; }
+.caja-link { background: none; border: 0; padding: 0; min-height: 44px; color: var(--azul-texto); font: 600 .9375rem/1.2 var(--f-texto); text-decoration: underline; text-underline-offset: 3px; }
+.caja-link:hover { color: var(--tinta); }
+.caja-nota { color: var(--tinta-2); font-size: .875rem; max-width: 60ch; }
+.caja-msg { min-height: 1.4em; color: var(--aviso); font-weight: 600; font-size: .9375rem; }
+
+/* filtros */
+.caja-filtros { display: flex; flex-wrap: wrap; gap: 8px; }
+.caja-chip { min-height: 44px; padding: 0 16px; border: 1.5px solid var(--linea); border-radius: 999px; background: var(--caja-lacado); font: 600 .9375rem/1 var(--f-texto); }
+.caja-chip:hover { border-color: var(--tinta); }
+.caja-chip[aria-pressed="true"] { background: var(--tinta); border-color: var(--tinta); color: var(--pared); }
+
+/* catálogo */
+.caja-rejilla { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px 12px; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+.caja-item { min-width: 0; }
+.caja-item[hidden] { display: none; }
+.caja-card { position: relative; width: 100%; height: 100%; display: grid; gap: 4px; align-content: start; text-align: left; padding: 8px 8px 12px; background: var(--caja-lacado); border: 1px solid var(--caja-filo); border-radius: var(--radio); box-shadow: 0 6px 14px -10px rgba(20, 20, 20, .35); }
+.caja-card[aria-pressed="true"] { border-color: var(--azul-texto); box-shadow: 0 0 0 2px var(--azul-texto), 0 10px 18px -12px rgba(20, 20, 20, .45); }
+.caja-foto { position: relative; display: block; aspect-ratio: 3 / 4; overflow: hidden; background: var(--pared-2); border-radius: 2px; margin-bottom: 4px; }
+.caja-foto picture, .caja-foto img { width: 100%; height: 100%; object-fit: cover; }
+.caja-card[aria-pressed="true"] .caja-foto::after { content: "En la caja"; position: absolute; left: 6px; bottom: 6px; padding: 5px 9px; border-radius: 999px; background: var(--tinta); color: var(--pared); font: 700 .6875rem/1 var(--f-texto); letter-spacing: .06em; text-transform: uppercase; }
+.caja-nom { font: 600 .9375rem/1.25 var(--f-texto); }
+.caja-meta { font-size: .8125rem; color: var(--suave); }
+.caja-precio { font-size: .875rem; color: var(--tinta-2); font-variant-numeric: tabular-nums; }
+.caja-ahora { color: var(--rebaja); font-size: 1rem; }
+.caja-antes { color: var(--suave); font-size: .8125rem; }
+.caja-aviso { font-size: .8125rem; font-weight: 600; color: var(--aviso); }
+html.con-movimiento .caja-card { transition: transform .5s var(--ease-out), box-shadow .3s; }
+html.con-movimiento .caja-card:hover { transform: translateY(-3px); }
+
+/* tallas */
+.caja-tallas { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.caja-talla { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 4px 12px; align-items: center; padding: 10px; background: var(--caja-lacado); border: 1px solid var(--caja-filo); border-radius: var(--radio); }
+.caja-talla-foto { grid-row: span 2; aspect-ratio: 3 / 4; overflow: hidden; background: var(--pared-2); border-radius: 2px; }
+.caja-talla-foto picture, .caja-talla-foto img { width: 100%; height: 100%; object-fit: cover; }
+.caja-talla-txt { display: grid; gap: 2px; min-width: 0; }
+.caja-talla-nom { font-weight: 600; font-size: .9375rem; line-height: 1.25; }
+.caja-select { grid-column: 2; width: 100%; min-height: 44px; padding: 0 10px; border: 1.5px solid var(--linea); border-radius: var(--radio); background: var(--pared); color: var(--tinta); font: 500 1rem var(--f-texto); }
+
+/* calendario */
+.caja-cal-env { max-width: 440px; }
+.caja-cal-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.caja-cal-nav b { font: 500 1.375rem/1.1 var(--f-titulo); }
+.caja-cal-nav button { width: 44px; height: 44px; display: grid; place-items: center; border: 1.5px solid var(--linea); border-radius: var(--radio); background: var(--caja-lacado); }
+.caja-cal-nav button:disabled { opacity: .35; cursor: default; }
+.caja-cal { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 3px; }
+.caja-dsem { text-align: center; padding: 6px 0; font: 600 .6875rem/1 var(--f-texto); letter-spacing: .08em; text-transform: uppercase; color: var(--suave); }
+.caja-d { position: relative; min-height: 44px; padding: 0; border: 1px solid var(--caja-filo); border-radius: var(--radio); background: var(--caja-lacado); font: 600 .9375rem/1 var(--f-texto); font-variant-numeric: tabular-nums; }
+.caja-d:hover:not(:disabled) { border-color: var(--azul-texto); }
+.caja-d:disabled { background: transparent; border-color: transparent; color: var(--suave); opacity: .65; text-decoration: line-through; cursor: default; }
+.caja-d[aria-pressed="true"] { background: var(--tinta); border-color: var(--tinta); color: var(--pared); }
+.caja-pocas::after { content: ""; position: absolute; left: 28%; right: 28%; bottom: 5px; height: 2px; border-radius: 2px; background: var(--azul-texto); }
+.caja-d[aria-pressed="true"].caja-pocas::after { background: var(--azul); }
+.caja-leyenda { margin-top: 10px; font-size: .8125rem; color: var(--suave); }
+.caja-raya { display: inline-block; width: 16px; height: 2px; vertical-align: middle; background: var(--azul-texto); border-radius: 2px; }
+.caja-horas-env { display: grid; gap: 8px; }
+.caja-dia { font: 500 1.375rem/1.2 var(--f-titulo); min-height: 1.4em; }
+.caja-horas { display: grid; grid-template-columns: repeat(auto-fill, minmax(78px, 1fr)); gap: 8px; min-height: 44px; max-width: 520px; }
+.caja-h { min-height: 44px; border: 1.5px solid var(--linea); border-radius: var(--radio); background: var(--caja-lacado); font: 600 1rem/1 var(--f-texto); font-variant-numeric: tabular-nums; }
+.caja-h:hover { border-color: var(--azul-texto); }
+.caja-h[aria-pressed="true"] { background: var(--tinta); border-color: var(--tinta); color: var(--pared); }
+
+/* resumen */
+.caja-resumen { margin: 0; display: grid; border: 1px solid var(--caja-filo); border-radius: var(--radio); background: var(--caja-lacado); max-width: 520px; }
+.caja-resumen > div { display: grid; grid-template-columns: 5.5rem minmax(0, 1fr); gap: 12px; padding: 12px 14px; border-top: 1px solid var(--linea); }
+.caja-resumen > div:first-child { border-top: 0; }
+.caja-resumen dt { color: var(--suave); font-size: .875rem; }
+.caja-resumen dd { margin: 0; font-weight: 600; }
+.caja-res-lista { margin: 0; padding: 0; list-style: none; display: grid; gap: 4px; }
+.caja-campo { display: grid; gap: 6px; max-width: 520px; }
+.caja-campo label { font-weight: 600; font-size: .9375rem; }
+.caja-opc { font-weight: 400; color: var(--suave); }
+.caja-campo input { min-height: 48px; padding: 0 12px; border: 1.5px solid var(--linea); border-radius: var(--radio); background: var(--caja-lacado); color: var(--tinta); font: 400 1rem var(--f-texto); width: 100%; }
+
+/* lo que solo trae la densidad sobria */
+.caja-prox, .caja-horario { display: none; }
+.caja-subt { font: 600 .8125rem/1.2 var(--f-texto); letter-spacing: .1em; text-transform: uppercase; color: var(--tinta-2); margin-bottom: 8px; }
+.caja-proximos { display: flex; flex-wrap: wrap; gap: 8px; }
+.caja-pr { min-height: 44px; padding: 0 14px; border: 1.5px solid var(--linea); border-radius: var(--radio); background: var(--caja-lacado); font: 600 .9375rem/1 var(--f-texto); }
+.caja-pr:hover { border-color: var(--azul-texto); }
+html.densidad-sobria .caja-prox { display: block; }
+html.densidad-sobria .caja-horario { display: table; border-collapse: collapse; width: 100%; max-width: 520px; font-size: .9375rem; }
+.caja-horario caption { text-align: left; font-weight: 600; padding-bottom: 6px; }
+.caja-horario th, .caja-horario td { text-align: left; padding: 8px 10px; border-top: 1px solid var(--linea); font-weight: 400; }
+.caja-horario th[scope="row"] { font-weight: 600; width: 40%; }
+html.densidad-sobria .caja-card { box-shadow: none; }
+html.densidad-sobria .caja-foto { display: none; }
+html.densidad-sobria .caja-rejilla { grid-template-columns: 1fr; gap: 0; }
+html.densidad-sobria .caja-card { border-radius: 0; border-width: 0 0 1px; background: transparent; padding: 10px 0; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 12px; min-height: 48px; }
+html.densidad-sobria .caja-nom { grid-column: 1; }
+html.densidad-sobria .caja-meta { grid-column: 1; }
+html.densidad-sobria .caja-precio { grid-column: 2; grid-row: 1; text-align: right; }
+html.densidad-sobria .caja-aviso { grid-column: 1 / -1; }
+html.densidad-sobria .caja-card[aria-pressed="true"] { box-shadow: inset 3px 0 0 var(--azul-texto); padding-left: 12px; }
+html.densidad-sobria .caja-card[aria-pressed="true"] .caja-nom::after { content: " · en la caja"; color: var(--azul-texto); font-weight: 600; }
+html.densidad-sobria .caja-talla { grid-template-columns: minmax(0, 1fr); background: transparent; border-width: 0 0 1px; border-radius: 0; }
+html.densidad-sobria .caja-talla-foto { display: none; }
+html.densidad-sobria .caja-select { grid-column: 1; }
+
+/* ================= la caja (bandeja) ================= */
+.caja-bandeja { position: sticky; bottom: 0; z-index: 5; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 12px; align-items: center;
+  margin-inline: calc(-1 * var(--gutter)); padding: 10px var(--gutter) calc(10px + env(safe-area-inset-bottom, 0px));
+  background: color-mix(in srgb, var(--pared) 94%, transparent); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  border-top: 1px solid var(--caja-filo); }
+.caja-obj { position: relative; width: 168px; padding: 5px; background: var(--caja-lacado); border: 1px solid var(--caja-filo); border-radius: var(--radio); box-shadow: var(--caja-sombra); }
+.caja-fondo { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; padding: 4px; background: var(--pared-2); box-shadow: inset 0 3px 8px rgba(20, 20, 20, .22); border-radius: 2px; }
+.caja-hueco, .caja-pieza { position: relative; display: block; aspect-ratio: 3 / 4; min-height: 0; border-radius: 2px; }
+.caja-hueco { border: 1.5px dashed color-mix(in srgb, var(--tinta) 28%, transparent); }
+.caja-pieza { padding: 0; border: 0; overflow: hidden; background: var(--pared); }
+.caja-pieza picture, .caja-pieza img { width: 100%; height: 100%; object-fit: cover; }
+.caja-x { position: absolute; top: 1px; right: 1px; width: 16px; height: 16px; border-radius: 50%; display: grid; place-items: center; background: var(--tinta); color: var(--pared); font: 700 .75rem/1 var(--f-texto); }
+.caja-pieza:focus-visible { outline-offset: -3px; }
+/* las dos solapas: las mitades de la O del logo (curva por fuera, ranura en medio) */
+.caja-solapa { position: absolute; top: 0; bottom: 0; width: calc(50% - 2px); background: var(--caja-lacado); border: 1px solid var(--caja-filo); box-shadow: var(--caja-sombra); transform: scaleX(.07); pointer-events: none; }
+.caja-solapa--i { left: 0; border-radius: 14px 0 0 14px; transform-origin: left center; }
+.caja-solapa--d { right: 0; border-radius: 0 14px 14px 0; transform-origin: right center; }
+.caja-cerrada .caja-solapa { transform: scaleX(1); }
+.caja-info { display: grid; gap: 8px; min-width: 0; }
+.caja-cuenta { font: 600 .9375rem/1.25 var(--f-texto); }
+.caja-cuenta:focus-visible { outline-offset: 4px; }
+.caja-sig { width: 100%; min-height: 44px; padding: 0 12px; font-size: .9375rem; }
+.caja-lista { display: none; list-style: none; margin: 0; padding: 0; }
+
+/* densidad sobria: sin caja dibujada ni solapas; una lista de lo elegido */
+html.densidad-sobria .caja-obj { display: none; }
+html.densidad-sobria .caja-bandeja { grid-template-columns: minmax(0, 1fr); }
+html.densidad-sobria .caja-lista { display: grid; gap: 0; max-height: 28vh; overflow: auto; }
+html.densidad-sobria .caja-fila { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 44px; border-top: 1px solid var(--linea); font-size: .9375rem; }
+html.densidad-sobria .caja-fila-nom { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+html.densidad-sobria .caja-fila-x { min-height: 44px; min-width: 44px; padding: 0 8px; border: 0; background: none; color: var(--azul-texto); font-weight: 600; text-decoration: underline; }
+
+/* móvil muy estrecho */
+@media (max-width: 380px) {
+  .caja-bandeja { gap: 10px; }
+}
+@media (max-height: 700px) and (max-width: 899px) {
+  .caja-bandeja { padding-block: 6px calc(6px + env(safe-area-inset-bottom, 0px)); }
+  .caja-cuenta { font-size: .875rem; }
+}
+
+/* escritorio: la caja a la derecha, pegada arriba */
+@media (min-width: 900px) {
+  .caja-cuerpo { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: clamp(32px, 5vw, 72px); align-items: start; }
+  .caja-paneles { grid-column: 1; grid-row: 1; min-width: 0; }
+  .caja-bandeja { grid-column: 2; grid-row: 1; position: sticky; top: calc(var(--cab-alto) + 20px); bottom: auto; margin: 0; padding: 0; gap: 16px; grid-template-columns: minmax(0, 1fr); background: none; border: 0; backdrop-filter: none; -webkit-backdrop-filter: none; }
+  .caja-obj { width: 100%; padding: 10px; }
+  .caja-fondo { gap: 8px; padding: 8px; }
+  .caja-solapa { width: calc(50% - 3px); }
+  .caja-x { width: 22px; height: 22px; top: 4px; right: 4px; }
+  .caja-cuenta { font-size: 1rem; }
+  .caja-rejilla { grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); }
+}
+html.densidad-sobria .caja-bandeja { align-self: start; }
+@media (min-width: 900px) { html.densidad-sobria .caja-bandeja { padding: 14px; border: 1px solid var(--caja-filo); background: var(--caja-lacado); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .caja *, .caja *::before, .caja *::after { transition: none !important; animation: none !important; }
+}

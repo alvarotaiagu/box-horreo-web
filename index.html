@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>BOX · ropa de mujer en la rúa do Hórreo, Carballo</title>
+<meta name="description" content="BOX, tienda de ropa de mujer en la rúa do Hórreo de Carballo: ropa buena para el día a día, americanas y abrigos, y vestidos de invitada y de fiesta. Mira las novedades y aparta hasta tres prendas para probártelas.">
+<meta property="og:title" content="BOX · rúa do Hórreo, Carballo">
+<meta property="og:description" content="Ropa de mujer para el día a día, el trabajo y las bodas. Pasa, que hay novedades.">
+<!-- script bloqueante: clases antes del primer pintado y el puente común window.BOX (lo usan main.js, espejo.js y caja.js) -->
+<script>
+(function (d, w) {
+  var h = d.documentElement;
+  h.classList.add('js');
+  // recargar a media página con cortina: siempre arriba salvo que haya #ancla
+  try { if ('scrollRestoration' in history) history.scrollRestoration = 'manual'; if (!location.hash) w.scrollTo(0, 0); } catch (e) {}
+  // MANDO DE MAQUETA (no viaja al cliente): solo con ?revision
+  try {
+    var q = new URLSearchParams(location.search);
+    if (q.has('revision')) {
+      h.classList.add('revision');
+      if (q.get('densidad') === 'sobria') h.classList.add('densidad-sobria');
+    }
+  } catch (e) {}
+  var mov = !(w.matchMedia && w.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  if (mov) h.classList.add('con-movimiento'); else h.classList.add('sin-movimiento');
+  h.classList.add('cortina-activa');
+
+  /* ---------- window.BOX: API común (estable) ----------
+     BOX.movimiento            false con prefers-reduced-motion: saltar al estado final, sin bucles
+     BOX.sobria()              true con la densidad sobria del mando (?revision&densidad=sobria)
+     BOX.alAbrirse(fn)         fn al EMPEZAR a abrirse la cortina (o ya, si se abrió)
+     BOX.fotos                 { clave: { anchos:[…], ancho, alto } } (lo rellena construir.mjs)
+     BOX.foto(clave, w, ext)   ruta de la foto con el ancho más pequeño ≥ w (ext: 'jpg' | 'webp' | 'avif')
+     BOX.srcset(clave, ext)    srcset completo de esa foto
+     BOX.prendas()             Promise<Array> con datos/prendas.json (respaldo dentro de la página si falla la red)
+     BOX.prenda(id)            Promise<Objeto|undefined>
+     BOX.whatsapp(texto)       abre WhatsApp con el texto; mientras falte el número, avisa de que falta
+     BOX.tel                   número en formato +34…, o '' mientras no se sepa
+     Eventos en document: 'box:abierta' (empieza a abrirse la cortina) y 'box:fuera' (ya no está). */
+  var B = w.BOX = w.BOX || {};
+  B.movimiento = mov;
+  B.sobria = function () { return h.classList.contains('densidad-sobria'); };
+  B.fotos = B.fotos || {};
+  B.foto = function (clave, ancho, ext) {
+    var f = B.fotos[clave]; if (!f) return '';
+    var a = f.anchos.filter(function (x) { return x >= (ancho || 800); })[0] || f.anchos[f.anchos.length - 1];
+    return 'img/fotos/' + clave + '-' + a + '.' + (ext || 'jpg');
+  };
+  B.srcset = function (clave, ext) {
+    var f = B.fotos[clave]; if (!f) return '';
+    return f.anchos.map(function (a) { return 'img/fotos/' + clave + '-' + a + '.' + (ext || 'jpg') + ' ' + a + 'w'; }).join(', ');
+  };
+  var prom = null;
+  B.prendas = function () {
+    if (prom) return prom;
+    var respaldo = function () {
+      try { return JSON.parse(d.getElementById('prendas-respaldo').textContent).prendas; } catch (e) { return []; }
+    };
+    prom = (w.fetch ? fetch('datos/prendas.json', { cache: 'no-cache' }).then(function (r) { if (!r.ok) throw 0; return r.json(); }).then(function (j) { return j.prendas; }) : Promise.reject())
+      .catch(respaldo);
+    return prom;
+  };
+  B.prenda = function (id) { return B.prendas().then(function (l) { return l.filter(function (p) { return p.id === id; })[0]; }); };
+  B.tel = B.tel || '';
+  B.whatsapp = function (texto) {
+    if (B.tel) { w.open('https://wa.me/' + B.tel.replace(/\D/g, '') + '?text=' + encodeURIComponent(texto || ''), '_blank', 'noopener'); return true; }
+    var av = d.getElementById('aviso-tel');
+    if (av) { av.hidden = false; av.classList.add('ve'); clearTimeout(B._avT); B._avT = setTimeout(function () { av.classList.remove('ve'); av.hidden = true; }, 5200); }
+    return false;
+  };
+
+  // el puente con la cortina
+  var cola = [];
+  var avisar = function (n) { try { d.dispatchEvent(new CustomEvent(n)); } catch (e) {} };
+  B.alAbrirse = function (fn) { if (B.abierta) { try { fn(); } catch (e) { console.warn(e); } } else cola.push(fn); };
+  B.abrir = function () {
+    if (B.abierta) return;
+    B.abierta = true;
+    cola.splice(0).forEach(function (fn) { try { fn(); } catch (e) { console.warn(e); } });
+    avisar('box:abierta');
+  };
+  B.retirarCortina = function () {
+    if (B.cortinaFuera) return;
+    B.cortinaFuera = true;
+    clearTimeout(w.__redCortina);
+    h.classList.remove('cortina-activa');
+    h.classList.add('cortina-fuera');
+    B.abrir();
+    if (!location.hash && w.scrollY > 0) w.scrollTo(0, 0);
+    avisar('box:fuera');
+  };
+  // red de seguridad por si main.js no llega: la cortina se va sola
+  w.__redCortina = setTimeout(function () { B.retirarCortina(); }, 6500);
+})(document, window);
+</script>
+<script>BOX.fotos={"tienda":{"anchos":[480,717],"ancho":717,"alto":960},"rotulo":{"anchos":[480,780],"ancho":780,"alto":330},"f0":{"anchos":[480,800,1080],"ancho":1080,"alto":1440},"f1":{"anchos":[480,800,1080],"ancho":1080,"alto":1440},"f2":{"anchos":[480,800,1080],"ancho":1080,"alto":1440},"f3":{"anchos":[480,800,1080],"ancho":1080,"alto":1080},"f5":{"anchos":[480,800,1080],"ancho":1080,"alto":1440},"f6":{"anchos":[480,800,1080],"ancho":1080,"alto":1440},"f7":{"anchos":[480,800,1080],"ancho":1080,"alto":1440},"f8":{"anchos":[480,800,1080],"ancho":1080,"alto":1440},"f17":{"anchos":[480,800,1080],"ancho":1080,"alto":1272},"f18":{"anchos":[480,800,1080],"ancho":1080,"alto":1440},"f19":{"anchos":[480,800,1080],"ancho":1080,"alto":1440},"f20":{"anchos":[480,800,1080],"ancho":1080,"alto":1440},"f22":{"anchos":[480,800,1080],"ancho":1080,"alto":1350},"f23":{"anchos":[480,800,1080],"ancho":1080,"alto":1350},"f24":{"anchos":[480,800,1080],"ancho":1080,"alto":1350},"f26":{"anchos":[480,800,1080],"ancho":1080,"alto":1350},"f29":{"anchos":[480,800,1080],"ancho":1080,"alto":1350},"f31":{"anchos":[480,800,1080],"ancho":1080,"alto":1350},"f40":{"anchos":[480,800,1080],"ancho":1080,"alto":1350},"f41":{"anchos":[480,800,1080],"ancho":1080,"alto":1350},"f46":{"anchos":[480,800,1080],"ancho":1080,"alto":1350},"f65":{"anchos":[480,800,1080],"ancho":1080,"alto":1350},"f67":{"anchos":[480,800,1080],"ancho":1080,"alto":1350},"f73":{"anchos":[480,800,1080],"ancho":1080,"alto":1350},"f76":{"anchos":[480,800,1080],"ancho":1080,"alto":1349},"f77":{"anchos":[480,800,1080],"ancho":1080,"alto":1080},"f79":{"anchos":[480,800,1080],"ancho":1080,"alto":1080},"f85":{"anchos":[480,800,1080],"ancho":1080,"alto":1080},"f92":{"anchos":[480,800,1079],"ancho":1079,"alto":1349},"f94":{"anchos":[480,800,1078],"ancho":1078,"alto":1153},"f96":{"anchos":[480,800,1080],"ancho":1080,"alto":1080},"f125":{"anchos":[480,800,1080],"ancho":1080,"alto":1350},"f162":{"anchos":[480,800,1080],"ancho":1080,"alto":1350},"f201":{"anchos":[480,800,1080],"ancho":1080,"alto":1350},"f208":{"anchos":[480,800,1080],"ancho":1080,"alto":1080},"f292":{"anchos":[480,800,937],"ancho":937,"alto":1171},"f309":{"anchos":[480,800,1080],"ancho":1080,"alto":1080}};BOX.tel="";</script>
+<script type="application/json" id="prendas-respaldo">{"_como":"Catálogo de BOX. Se cambia aquí sin tocar código: añadir, quitar u ordenar prendas. foto = clave de img/fotos (fotos.json); enfoque = object-position; categoria: Diario, Trabajo, Punto, Abrigo, Invitada o Fiesta; precio = null (precio en tienda) o {\"ahora\", \"antes\"} SOLO si BOX lo ha publicado, con publicado = la fecha en que lo publicó; aviso = texto corto (p. ej. última talla); novedad = sale en «Novedades»; espejo = sale en «Invitada y fiesta». Tras cambiarlo, ejecutar node construir.mjs para actualizar el respaldo que va dentro de la página.","actualizado":"2026-10-28","prendas":[{"id":"falda-roja","foto":"f0","enfoque":"50% 38%","nombre":"Falda roja de vuelo y blusa de lazada","categoria":"Diario","marca":"","texto":"Para pasear por la rúa do Hórreo con sol y con ganas. La falda se mueve sola y la blusa blanca la deja lucirse.","alt":"Falda roja de vuelo y blusa blanca con lazada, junto al escaparate de la tienda","precio":null,"aviso":"","novedad":true,"espejo":false},{"id":"americana-beige","foto":"f2","enfoque":"50% 34%","nombre":"Americana beige y camisa celeste","categoria":"Trabajo","marca":"","texto":"Para la oficina sin parecer de oficina. Una americana buena que sube cualquier pantalón.","alt":"Americana beige sobre camisa celeste, en la tienda","precio":null,"aviso":"","novedad":true,"espejo":false},{"id":"trench-ferrache","foto":"f6","enfoque":"50% 42%","nombre":"Trench marrón chocolate","categoria":"Abrigo","marca":"Ferrache","texto":"Un trench de los de todo el año: lo ves colgado y ya sabes con qué te lo pondrías.","alt":"Trench marrón chocolate de Ferrache, con cinturón, colgado en una percha","precio":{"ahora":"78 €","antes":"155,90 €"},"publicado":"4 de febrero de 2026","aviso":"Es el último: talla M","novedad":true,"espejo":false},{"id":"americana-amarilla","foto":"f17","enfoque":"50% 36%","nombre":"Americana amarilla y vaqueros","categoria":"Diario","marca":"","texto":"Un color que se ve desde la otra acera, con unos vaqueros de siempre para que no pese.","alt":"Americana amarilla con vaqueros, en la tienda","precio":null,"aviso":"","novedad":true,"espejo":false},{"id":"largo-limon","foto":"f65","enfoque":"50% 34%","nombre":"Vestido largo amarillo limón","categoria":"Invitada","marca":"","texto":"Para esa boda que ya tienes en el calendario. Pruébatelo delante del espejo dorado.","alt":"Vestido largo amarillo limón, en el probador de cortina berenjena","precio":null,"aviso":"","novedad":true,"espejo":true},{"id":"rayas-pinzas","foto":"f29","enfoque":"50% 36%","nombre":"Camisa de rayas y pantalón de pinzas","categoria":"Diario","marca":"","texto":"El pantalón camel de pinzas, de esos básicos que se usan toda la semana, con una camisa a rayas.","alt":"Camisa a rayas y pantalón camel de pinzas en la puerta de la tienda","precio":null,"aviso":"","novedad":true,"espejo":false},{"id":"jersey-crudo","foto":"f19","enfoque":"50% 32%","nombre":"Jersey crudo de cuello alto","categoria":"Punto","marca":"","texto":"El jersey que te pones en noviembre y no te quitas hasta marzo. Con todo.","alt":"Jersey de punto crudo de cuello alto, en la tienda","precio":null,"aviso":"","novedad":true,"espejo":false},{"id":"mono-lentejuelas","foto":"f40","enfoque":"50% 38%","nombre":"Mono de lentejuelas granate","categoria":"Fiesta","marca":"","texto":"Lentejuelas que se ven desde la otra punta del salón, con la espalda de tiras cruzadas.","alt":"Mono de lentejuelas granate visto de espaldas, en el probador","precio":null,"aviso":"","novedad":true,"espejo":true},{"id":"americana-marron","foto":"f20","enfoque":"50% 34%","nombre":"Americana marrón y pantalón de topos","categoria":"Trabajo","marca":"","texto":"Una americana lisa y un pantalón con gracia: de lunes a viernes, y el sábado también.","alt":"Americana marrón con pantalón de topos, en la tienda","precio":null,"aviso":"","novedad":true,"espejo":false},{"id":"corto-lazo","foto":"f22","enfoque":"50% 36%","nombre":"Vestido corto amarillo con lazo","categoria":"Invitada","marca":"","texto":"Corto, amarillo pálido y con un lazo que lo hace todo.","alt":"Vestido corto amarillo pálido con lazo, ante la cortina berenjena y el espejo dorado del probador","precio":null,"aviso":"","novedad":true,"espejo":true},{"id":"abrigo-cuadros","foto":"f18","enfoque":"50% 34%","nombre":"Abrigo de cuadros","categoria":"Abrigo","marca":"","texto":"Un abrigo de cuadros con buena caída, para el invierno de Carballo.","alt":"Abrigo largo de cuadros, en la tienda","precio":null,"aviso":"","novedad":true,"espejo":false},{"id":"midi-fucsia","foto":"f73","enfoque":"50% 34%","nombre":"Vestido midi fucsia","categoria":"Invitada","marca":"","texto":"Midi, fucsia, de manga larga y con el hombro marcado. Para una comunión, una boda de día o una cena.","alt":"Vestido midi fucsia de manga larga, en el probador","precio":null,"aviso":"","novedad":true,"espejo":true},{"id":"celeste-rayas","foto":"f3","enfoque":"50% 50%","nombre":"Pantalón celeste y chaqueta de punto a rayas","categoria":"Punto","marca":"","texto":"Colgados en el burro y listos para salir juntos: el celeste y las rayas verdes se entienden.","alt":"Pantalón celeste y chaqueta de punto a rayas verdes colgados en un burro, sobre el suelo hidráulico","precio":null,"aviso":"","novedad":true,"espejo":false},{"id":"blusa-celeste","foto":"f26","enfoque":"50% 34%","nombre":"Blusa celeste y falda midi camel","categoria":"Diario","marca":"","texto":"Una blusa de las que se lavan y se vuelven a poner, con una falda camel a media pierna.","alt":"Blusa celeste con falda midi camel, en la tienda","precio":null,"aviso":"","novedad":true,"espejo":false},{"id":"chaqueton-vandos","foto":"f7","enfoque":"50% 36%","nombre":"Chaquetón reversible de lana","categoria":"Abrigo","marca":"Van Dos","texto":"De lana, de cuadros y reversible: dos abrigos en uno.","alt":"Chaquetón de lana de cuadros de Van Dos","precio":{"ahora":"161 €","antes":"230 €"},"publicado":"13 de enero de 2026","aviso":"","novedad":false,"espejo":false},{"id":"chaqueta-surkana","foto":"f8","enfoque":"50% 40%","nombre":"Chaqueta acolchada","categoria":"Abrigo","marca":"Surkana","texto":"Acolchada, con capucha y bolsillos grandes. Para la lluvia de todos los días.","alt":"Chaqueta acolchada de Surkana con capucha","precio":{"ahora":"97 €","antes":"139 €"},"publicado":"10 de enero de 2026","aviso":"","novedad":false,"espejo":false},{"id":"largo-marino","foto":"f67","enfoque":"50% 34%","nombre":"Vestido largo marino con lazo blanco","categoria":"Invitada","marca":"","texto":"Marino, de un hombro y con un gran lazo blanco.","alt":"Vestido largo marino de un hombro con lazo blanco, en el probador","precio":null,"aviso":"","novedad":false,"espejo":true},{"id":"mono-volante","foto":"f76","enfoque":"50% 34%","nombre":"Mono rojo con volante","categoria":"Fiesta","marca":"","texto":"Rojo y con un volante enorme: entra en la sala antes que tú.","alt":"Mono rojo con un gran volante, en el probador","precio":null,"aviso":"","novedad":false,"espejo":true},{"id":"pelo-granate","foto":"f41","enfoque":"50% 36%","nombre":"Chaqueta de pelo granate","categoria":"Fiesta","marca":"","texto":"Encima del mono de lentejuelas o de un vestido negro: abriga y es la noche entera.","alt":"Chaqueta corta de pelo granate sobre un mono de lentejuelas, en el probador","precio":null,"aviso":"","novedad":false,"espejo":true},{"id":"largo-chocolate","foto":"f46","enfoque":"50% 34%","nombre":"Vestido largo chocolate con abertura","categoria":"Fiesta","marca":"","texto":"Largo, color chocolate y con abertura. De los que no necesitan nada más.","alt":"Vestido largo color chocolate con abertura, en el probador","precio":null,"aviso":"","novedad":false,"espejo":true},{"id":"saten-crudo","foto":"f92","enfoque":"50% 34%","nombre":"Vestido de satén crudo","categoria":"Invitada","marca":"","texto":"Satén crudo que cae solo. Para una boda de tarde o una cena larga.","alt":"Vestido de satén color crudo, en el probador","precio":null,"aviso":"","novedad":false,"espejo":true},{"id":"largo-flores","foto":"f85","enfoque":"50% 40%","nombre":"Vestido largo amarillo de flores","categoria":"Invitada","marca":"","texto":"Largo, amarillo y de flores: para una boda de verano en una finca.","alt":"Vestido largo amarillo estampado de flores, en el probador","precio":null,"aviso":"","novedad":false,"espejo":true},{"id":"mono-bordado","foto":"f23","enfoque":"50% 34%","nombre":"Mono blanco bordado","categoria":"Invitada","marca":"","texto":"Blanco, bordado y de una pieza. Para quien no se pone vestido ni en una boda.","alt":"Mono blanco bordado, en el probador","precio":null,"aviso":"","novedad":false,"espejo":true},{"id":"chaqueta-marino","foto":"f77","enfoque":"50% 50%","nombre":"Chaqueta marino de botones dorados","categoria":"Trabajo","marca":"","texto":"Marino con botones dorados: la chaqueta que arregla unos vaqueros.","alt":"Chaqueta marino con botones dorados","precio":null,"aviso":"","novedad":false,"espejo":false},{"id":"americana-rosa","foto":"f79","enfoque":"50% 50%","nombre":"Americana rosa de raya diplomática","categoria":"Trabajo","marca":"","texto":"Raya diplomática, pero en rosa. Seria lo justo.","alt":"Americana rosa de raya diplomática","precio":null,"aviso":"","novedad":false,"espejo":false},{"id":"pata-gallo","foto":"f96","enfoque":"50% 50%","nombre":"Chaqueta de pata de gallo naranja y celeste","categoria":"Trabajo","marca":"","texto":"La pata de gallo de siempre, en naranja y celeste.","alt":"Chaqueta de pata de gallo en naranja y celeste","precio":null,"aviso":"","novedad":false,"espejo":false},{"id":"camisa-azul","foto":"f31","enfoque":"50% 36%","nombre":"Camisa azul y falda pantalón camel","categoria":"Diario","marca":"","texto":"Una camisa azul y una falda pantalón: parece falda y anda como pantalón.","alt":"Camisa azul con falda pantalón camel, delante de la cortina del probador","precio":null,"aviso":"","novedad":false,"espejo":false},{"id":"largo-crudo","foto":"f24","enfoque":"50% 34%","nombre":"Vestido largo crudo de flores negras","categoria":"Diario","marca":"","texto":"Largo, crudo y con flores negras. Con zapatillas por el día, con sandalia por la noche.","alt":"Vestido largo color crudo con flores negras, en la tienda","precio":null,"aviso":"","novedad":false,"espejo":false}]}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..800;1,6..96,400..700&family=Hanken+Grotesk:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="css/base.css?v=6cba9cf4">
+<link rel="stylesheet" href="css/estilos.css?v=5874b0b8">
+<link rel="stylesheet" href="css/espejo.css?v=26fbaf5f">
+<link rel="stylesheet" href="css/caja.css?v=d42e6069">
+<link rel="icon" href="marca/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="marca/favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="marca/apple-touch-icon.png">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#F4F1EC">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="es_ES">
+<meta property="og:image" content="img/og.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<noscript><style>#cortina{display:none!important}</style></noscript>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "ClothingStore",
+  "name": "BOX",
+  "alternateName": "Box Horreo",
+  "description": "Tienda de ropa de mujer en la rúa do Hórreo de Carballo: ropa de diario, de trabajo, abrigos y vestidos de invitada y de fiesta.",
+  "image": "img/og.jpg",
+  "address": { "@type": "PostalAddress", "streetAddress": "Rúa do Hórreo", "addressLocality": "Carballo", "addressRegion": "A Coruña", "postalCode": "15100", "addressCountry": "ES" },
+  "sameAs": ["https://www.instagram.com/boxhorreo/", "https://www.facebook.com/p/Box-Horreo-100065150634786/"]
+}
+</script>
+</head>
+<body>
+<a class="saltar" href="#principal">Saltar al contenido</a>
+<!-- cortina de entrada: el rótulo se monta pieza a pieza con luz rasante, la caja de la O abre sus solapas y se entra por ella (js/main.js) -->
+<div class="cortina" id="cortina" aria-hidden="true">
+  <div class="cortina__pared" id="cort-pared"></div>
+  <div class="cortina__centro">
+    <svg class="cortina__svg" id="cort-svg" viewBox="0 0 245 100" overflow="visible">
+      <defs><clipPath id="cort-clip"><path d="M90 0H136Q150 0 150 14V86Q150 100 136 100H90Q76 100 76 86V14Q76 0 90 0Z"/></clipPath></defs>
+      <g id="cort-foto" clip-path="url(#cort-clip)" opacity="0"></g>
+      <g id="cort-soms" class="rot__som"></g>
+      <g id="cort-somc" class="rot__som"></g>
+      <g id="cort-cuerpos" class="rot__cuerpos" filter="url(#rel)"></g>
+    </svg>
+  </div>
+  <div class="cortina__haz" id="cort-haz"></div>
+  <p class="cortina__pie" id="cort-pie">Rúa do Hórreo · Carballo</p>
+</div>
+<script>/* red de seguridad inline por si main.js no llega */ setTimeout(function(){ if (window.BOX && !BOX.cortinaFuera && !BOX.cortinaEnMarcha) BOX.retirarCortina(); }, 2500);</script>
+
+<header class="cab" id="cab">
+  <div class="cab__in">
+    <a class="cab__logo" href="#portada" aria-label="BOX, volver arriba">
+      <svg viewBox="0 0 245 100" aria-hidden="true"><use href="#box-caja"/></svg>
+    </a>
+    <nav class="cab__nav" aria-label="Secciones">
+      <a href="#novedades">Novedades</a>
+      <a href="#invitada">Invitada y fiesta</a>
+      <a href="#rebajas">Rebajas</a>
+      <a href="#tienda">La tienda</a>
+    </nav>
+    <a class="cab__caja" href="#reservar"><span class="cab__caja-ico" aria-hidden="true"><svg viewBox="74 -2 78 104"><use href="#box-o"/></svg></span><span class="cab__caja-txt">Prepárame una caja</span><span class="cab__cuenta" id="cab-cuenta" hidden>0</span></a>
+    <button type="button" class="cab__menu" id="cab-menu" aria-expanded="false" aria-controls="menu-movil"><span class="sr">Abrir el menú</span><i aria-hidden="true"></i><i aria-hidden="true"></i></button>
+  </div>
+</header>
+<div class="menu-movil" id="menu-movil" hidden>
+  <nav aria-label="Secciones (móvil)">
+    <a href="#novedades">Novedades</a>
+    <a href="#invitada">Invitada y fiesta</a>
+    <a href="#rebajas">Rebajas</a>
+    <a href="#tienda">La tienda</a>
+    <a href="#reservar">Prepárame una caja</a>
+  </nav>
+  <p class="menu-movil__pie">Rúa do Hórreo · Carballo · <span class="pendiente">Horario por confirmar</span></p>
+</div>
+
+<!-- símbolos: el rótulo (logo 2 «La O es una caja») y la baldosa del suelo -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <symbol id="box-caja" viewBox="0 0 245 100"><g fill="currentColor"><path d="M0 0H20V100H0Z"/><path d="M24 0H44Q62 0 62 18V28Q62 46 44 46H24Z"/><path d="M24 50H46Q66 50 66 70V80Q66 100 46 100H24Z"/><path d="M111 0H90Q76 0 76 14V86Q76 100 90 100H111Z"/><path d="M115 0H136Q150 0 150 14V86Q150 100 136 100H115Z"/><path d="M165 0H193L245 100H217Z"/><path d="M231 0H245L225.2 30H211.2Z"/><path d="M184.8 70H198.8L179 100H165Z"/></g></symbol>
+    <symbol id="box-o" viewBox="74 -2 78 104"><g fill="currentColor"><path d="M111 0H90Q76 0 76 14V86Q76 100 90 100H111Z"/><path d="M115 0H136Q150 0 150 14V86Q150 100 136 100H115Z"/></g></symbol>
+    <symbol id="box-baldosa" viewBox="0 0 100 100">
+      <g fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round">
+        <path d="M0 34A34 34 0 0 0 34 0M66 0A34 34 0 0 0 100 34M100 66A34 34 0 0 0 66 100M34 100A34 34 0 0 0 0 66"/>
+        <circle cx="50" cy="50" r="13"/>
+        <path d="M40.8 40.8L24 24M59.2 40.8L76 24M59.2 59.2L76 76M40.8 59.2L24 76"/>
+      </g>
+      <g fill="currentColor">
+        <circle cx="50" cy="0" r="5"/><circle cx="50" cy="100" r="5"/><circle cx="0" cy="50" r="5"/><circle cx="100" cy="50" r="5"/>
+        <ellipse cx="50" cy="13" rx="3.6" ry="6.5"/><ellipse cx="43" cy="9" rx="3" ry="5.5" transform="rotate(-50 43 9)"/><ellipse cx="57" cy="9" rx="3" ry="5.5" transform="rotate(50 57 9)"/>
+        <ellipse cx="50" cy="87" rx="3.6" ry="6.5"/><ellipse cx="43" cy="91" rx="3" ry="5.5" transform="rotate(50 43 91)"/><ellipse cx="57" cy="91" rx="3" ry="5.5" transform="rotate(-50 57 91)"/>
+        <ellipse cx="13" cy="50" rx="6.5" ry="3.6"/><ellipse cx="9" cy="43" rx="5.5" ry="3" transform="rotate(50 9 43)"/><ellipse cx="9" cy="57" rx="5.5" ry="3" transform="rotate(-50 9 57)"/>
+        <ellipse cx="87" cy="50" rx="6.5" ry="3.6"/><ellipse cx="91" cy="43" rx="5.5" ry="3" transform="rotate(-50 91 43)"/><ellipse cx="91" cy="57" rx="5.5" ry="3" transform="rotate(50 91 57)"/>
+      </g>
+    </symbol>
+    <!-- relieve: luz rasante sobre el alfa de las letras (portada y cortina) -->
+    <filter id="rel" filterUnits="userSpaceOnUse" x="-40" y="-40" width="325" height="180" color-interpolation-filters="sRGB">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="1.1" result="h"/>
+      <feDiffuseLighting in="h" id="rel-dif" surfaceScale="4" diffuseConstant="1.5" lighting-color="#fff" result="d"><feDistantLight id="rel-luz" azimuth="230" elevation="40"/></feDiffuseLighting>
+      <feComposite in="d" in2="SourceAlpha" operator="in" result="di"/>
+      <feBlend in="SourceGraphic" in2="di" mode="multiply" result="mu"/>
+      <feComposite in="mu" in2="SourceGraphic" operator="arithmetic" k1="0" k2=".75" k3=".25" k4="0"/>
+    </filter>
+    <filter id="rel-n" filterUnits="userSpaceOnUse" x="50" y="-20" width="130" height="150" color-interpolation-filters="sRGB">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="1.1" result="h"/>
+      <feDiffuseLighting in="h" id="reln-dif" surfaceScale="4" diffuseConstant="1.5" lighting-color="#fff" result="d"><feDistantLight id="reln-luz" azimuth="230" elevation="40"/></feDiffuseLighting>
+      <feComposite in="d" in2="SourceAlpha" operator="in" result="di"/>
+      <feBlend in="SourceGraphic" in2="di" mode="multiply" result="mu"/>
+      <feComposite in="mu" in2="SourceGraphic" operator="arithmetic" k1="0" k2=".75" k3=".25" k4="0"/>
+    </filter>
+    <filter id="som-b" filterUnits="userSpaceOnUse" x="-40" y="-40" width="325" height="180"><feGaussianBlur stdDeviation="2.2"/></filter>
+    <filter id="som-n" filterUnits="userSpaceOnUse" x="-40" y="-40" width="325" height="180"><feGaussianBlur stdDeviation=".7"/></filter>
+  </defs>
+</svg>
+
+<main id="principal">
+
+  <!-- ============ 2. portada · «El rótulo»: BOX en relieve sobre la pared; la ropa solo asoma por los cortes ============ -->
+  <section class="portada" id="portada" aria-labelledby="portada-tit">
+    <div class="portada__pared" aria-hidden="true"></div>
+    <div class="portada__in">
+      <div class="portada__rot-caja">
+        <svg class="rot" id="rot" viewBox="0 0 245 100" role="img" aria-label="BOX, el rótulo de la pared de la tienda: letras blancas en relieve sobre la pared blanca. Por los cortes asoma la ropa.">
+          <defs>
+            <mask id="rot-masc" maskUnits="userSpaceOnUse" x="-40" y="-40" width="325" height="180">
+              <g fill="#fff">
+                <path d="M0 0H34V100H0Z"/>
+                <path d="M24 0H44Q62 0 62 18V28Q62 46 44 46H24Z"/>
+                <path d="M24 50H46Q66 50 66 70V80Q66 100 46 100H24Z"/>
+                <path d="M24 44H54V52H24Z"/>
+                <path d="M90 0H136Q150 0 150 14V86Q150 100 136 100H90Q76 100 76 86V14Q76 0 90 0Z"/>
+                <path d="M231 0H245L225.2 30H211.2Z"/>
+                <path d="M184.8 70H198.8L179 100H165Z"/>
+              </g>
+              <g id="rot-mascp" fill="#000"></g>
+            </mask>
+            <clipPath id="rot-cb"><rect x="-2" y="-4" width="72" height="108"/></clipPath>
+            <clipPath id="rot-co"><rect x="72" y="-4" width="82" height="108"/></clipPath>
+            <clipPath id="rot-cx"><rect x="160" y="-4" width="90" height="108"/></clipPath>
+          </defs>
+          <g id="rot-fotos" mask="url(#rot-masc)"></g>
+          <g id="rot-soms" class="rot__som"></g>
+          <g id="rot-somc" class="rot__som"></g>
+          <g id="rot-cuerpos" class="rot__cuerpos" filter="url(#rel)"></g>
+        </svg>
+        <!-- densidad sobria: el rótulo plano, sin luz -->
+        <svg class="rot-plano" viewBox="0 0 245 100" aria-hidden="true"><use href="#box-caja"/></svg>
+      </div>
+      <div class="portada__texto">
+        <h1 class="portada__tit" id="portada-tit"><span class="ln"><span>Pasa, que hay</span></span><span class="ln"><em>novedades.</em></span></h1>
+        <div class="portada__der">
+          <p class="portada__baj">Ropa buena para el día a día, americanas y abrigos, y vestidos de invitada y de fiesta. En la rúa do Hórreo, en Carballo.</p>
+          <div class="portada__acc">
+            <a class="btn" href="#novedades">Ver novedades</a>
+            <a class="btn btn--hueco" href="#reservar">Prepárame una caja</a>
+          </div>
+        </div>
+      </div>
+      <p class="portada__pie">
+        <span>Rúa do Hórreo · Carballo</span>
+        <span><span class="pendiente">[teléfono]</span> · <span class="pendiente">Horario por confirmar</span></span>
+        <a class="portada__reb" href="#rebajas"><i aria-hidden="true"></i>Rebajas: trench Ferrache 78 €, antes 155,90 €</a>
+      </p>
+      <!-- densidad sobria: lo que hay que saber, en datos -->
+      <dl class="portada__datos">
+        <div><dt>Dónde</dt><dd>Rúa do Hórreo · Carballo</dd></div>
+        <div><dt>Horario</dt><dd><span class="pendiente">Horario por confirmar</span></dd></div>
+        <div><dt>Teléfono y WhatsApp</dt><dd><span class="pendiente">[teléfono]</span></dd></div>
+        <div><dt>Rebajas</dt><dd><a href="#rebajas">3 prendas con antes y ahora</a></dd></div>
+      </dl>
+    </div>
+  </section>
+
+  <!-- ============ 3. novedades · «Por la ranura»: cada prenda pasa por la O-caja; datos/prendas.json ============ -->
+  <section class="sec nov" id="novedades" aria-labelledby="nov-tit">
+    <div class="env">
+      <header class="sec-cab">
+        <p class="eyebrow">Novedades</p>
+        <h2 id="nov-tit" class="rev">Lo que acaba de entrar, <em>por la ranura</em></h2>
+        <p class="sec-cab__txt">De diario, de trabajo, de abrigo, de invitada y de fiesta: todo pesa lo mismo. Si te gusta algo, apártalo y te lo dejamos en el probador.</p>
+      </header>
+
+      <div class="ranura" id="ranura">
+        <div class="ranura__visor" id="ranura-visor" tabindex="0" role="group" aria-roledescription="carrusel" aria-label="Novedades por la ranura de la O. Usa las flechas izquierda y derecha para cambiar de prenda.">
+          <div class="ranura__foto" id="ranura-foto"><img id="ranura-img" alt="" width="1080" height="1350" decoding="async"></div>
+          <svg class="ranura__svg" viewBox="0 0 104 120" aria-hidden="true">
+            <g transform="translate(-61 10)">
+              <g id="ranura-s" filter="url(#som-b)" fill="#5B4630" fill-opacity=".36"></g>
+              <g id="ranura-c" class="rot__cuerpos" filter="url(#rel-n)"></g>
+            </g>
+          </svg>
+          <p class="ranura__ayuda" aria-hidden="true">desliza</p>
+        </div>
+        <div class="ranura__lado">
+          <div class="ranura__info" id="ranura-info" aria-live="polite" aria-atomic="true">
+            <p class="ranura__num"><span id="ranura-num" class="mono">01 / 14</span><b id="ranura-cat">Diario</b></p>
+            <h3 id="ranura-tit">Novedades de BOX</h3>
+            <p class="ranura__marca" id="ranura-marca"></p>
+            <p class="ranura__txt" id="ranura-txt"></p>
+            <p class="ranura__precio" id="ranura-precio"></p>
+          </div>
+          <div class="ranura__mando">
+            <button type="button" class="flecha" id="ranura-prev" aria-label="Prenda anterior"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5L8 12l7 7"/></svg></button>
+            <button type="button" class="flecha" id="ranura-next" aria-label="Prenda siguiente"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>
+            <button type="button" class="btn btn--azul" id="ranura-meter">Apártala para probártela</button>
+          </div>
+          <div class="ranura__mini" id="ranura-mini" role="group" aria-label="Elegir prenda"></div>
+        </div>
+      </div>
+      <!-- densidad sobria: todas a la vez, en rejilla -->
+      <ul class="nov-rejilla" id="nov-rejilla" aria-label="Todas las novedades"></ul>
+      <noscript><p class="sec-cab__txt">Las novedades se cargan con JavaScript. También las publicamos en <a href="https://www.instagram.com/boxhorreo/">Instagram</a>.</p></noscript>
+    </div>
+  </section>
+
+  <!-- ============ 4. invitada y fiesta · «Limpia el espejo» (módulo: partes/espejo.html, css/espejo.css, js/espejo.js) ============ -->
+  <section class="esp" id="invitada" aria-labelledby="esp-tit">
+  <div class="env esp-in">
+    <header class="esp-cab">
+      <p class="esp-ante">Invitada y fiesta</p>
+      <h2 id="esp-tit">Pásale la mano al espejo</h2>
+      <p class="esp-lead">Este es su probador de verdad: la cortina de terciopelo berenjena y el espejo dorado de la tienda. Está empañado; pasa el dedo o el cursor y aparece el look.</p>
+    </header>
+
+    <div class="esp-pieza" id="esp-pieza">
+      <div class="esp-escena">
+        <!-- marco dorado labrado (viewBox -24 -64 448 660; cristal 0..400 x 0..560) -->
+        <div class="esp-espejo" id="esp-espejo" tabindex="0" role="group" aria-label="Espejo del probador. Pasa el cursor o el dedo para limpiar el vaho. Con el teclado, Intro lo limpia y las flechas izquierda y derecha cambian de prenda.">
+          <div class="esp-cristal esp--cargando" id="esp-cristal">
+            <picture class="esp-foto" id="esp-foto">
+              <source type="image/avif" id="esp-src-avif">
+              <source type="image/webp" id="esp-src-webp">
+              <img id="esp-img" alt="" decoding="async">
+            </picture>
+            <canvas class="esp-vaho" id="esp-vaho" aria-hidden="true"></canvas>
+            <div class="esp-reflejo" aria-hidden="true"></div>
+          </div>
+          <svg class="esp-marco" viewBox="-24 -64 448 660" aria-hidden="true" focusable="false">
+            <defs>
+              <linearGradient id="esp-oro" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="400" y2="560">
+                <stop offset="0" stop-color="#7d5d1d"/><stop offset=".16" stop-color="#e9d189"/><stop offset=".33" stop-color="#b8963e"/>
+                <stop offset=".5" stop-color="#fff0bb"/><stop offset=".64" stop-color="#b8963e"/><stop offset=".83" stop-color="#7d5d1d"/><stop offset="1" stop-color="#d9be77"/>
+              </linearGradient>
+              <linearGradient id="esp-oroV" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="560">
+                <stop offset="0" stop-color="#f3e2ae"/><stop offset=".4" stop-color="#b8963e"/><stop offset=".7" stop-color="#8a6a22"/><stop offset="1" stop-color="#cdb06a"/>
+              </linearGradient>
+              <linearGradient id="esp-labio" gradientUnits="userSpaceOnUse" x1="0" y1="60" x2="0" y2="500">
+                <stop offset="0" stop-color="#0f0509" stop-opacity=".85"/><stop offset=".5" stop-color="#1e0d16" stop-opacity=".55"/><stop offset="1" stop-color="#0f0509" stop-opacity=".8"/>
+              </linearGradient>
+              <pattern id="esp-talla" width="20" height="20" patternUnits="userSpaceOnUse">
+                <path d="M3 17C3 9 10 11 10 3M10 3C10 11 17 9 17 17" fill="none" stroke="#f7e6b0" stroke-width="1.4" opacity=".75" transform="translate(.9 .9)"/>
+                <path d="M3 17C3 9 10 11 10 3M10 3C10 11 17 9 17 17" fill="none" stroke="#5c4413" stroke-width="1.7"/>
+                <circle cx="10" cy="3.4" r="1.5" fill="#5c4413"/>
+              </pattern>
+              <radialGradient id="esp-brillo" gradientUnits="userSpaceOnUse" cx="120" cy="120" r="190"><stop offset="0" stop-color="#fffbe3" stop-opacity=".95"/><stop offset=".45" stop-color="#fff0bb" stop-opacity=".35"/><stop offset="1" stop-color="#fff0bb" stop-opacity="0"/></radialGradient>
+              <path id="esp-bandas" fill-rule="evenodd" d="M0 560V200A200 200 0 0 1 400 200V560ZM18 542V200A182 182 0 0 1 382 200V542ZM38 522V200A162 162 0 0 1 362 200V522ZM61 499V200A139 139 0 0 1 339 200V499Z"/>
+              <path id="esp-petalo" d="M0 0C-11-14-10-40 0-58C10-40 11-14 0 0Z"/>
+              <g id="esp-rosa">
+                <circle r="15" fill="url(#esp-oro)" stroke="#5c4413" stroke-width="1.2"/>
+                <g fill="#5c4413"><circle cx="0" cy="-10.5" r="2.2"/><circle cx="7.4" cy="-7.4" r="2.2"/><circle cx="10.5" cy="0" r="2.2"/><circle cx="7.4" cy="7.4" r="2.2"/><circle cx="0" cy="10.5" r="2.2"/><circle cx="-7.4" cy="7.4" r="2.2"/><circle cx="-10.5" cy="0" r="2.2"/><circle cx="-7.4" cy="-7.4" r="2.2"/></g>
+                <circle r="5" fill="#f3e2ae" stroke="#5c4413" stroke-width="1"/>
+              </g>
+              <g id="esp-voluta">
+                <path d="M0 0C-8-16-34-20-38-2C-41 14-18 18-15 5C-13-4-25-6-26 1" fill="none" stroke="#5c4413" stroke-width="7.4" stroke-linecap="round"/>
+                <path d="M0 0C-8-16-34-20-38-2C-41 14-18 18-15 5C-13-4-25-6-26 1" fill="none" stroke="url(#esp-oroV)" stroke-width="5" stroke-linecap="round"/>
+                <path d="M-4-9C-14-16-28-14-33-5" fill="none" stroke="#fff3c9" stroke-width="1.3" stroke-linecap="round" opacity=".8"/>
+              </g>
+            </defs>
+            <!-- cresta -->
+            <g transform="translate(200 6)">
+              <g stroke="#5c4413" stroke-width="1.2" fill="url(#esp-oroV)">
+                <use href="#esp-petalo" transform="rotate(-80) scale(.82)"/><use href="#esp-petalo" transform="rotate(80) scale(.82)"/>
+                <use href="#esp-petalo" transform="rotate(-60) scale(.94)"/><use href="#esp-petalo" transform="rotate(60) scale(.94)"/>
+                <use href="#esp-petalo" transform="rotate(-40)"/><use href="#esp-petalo" transform="rotate(40)"/>
+                <use href="#esp-petalo" transform="rotate(-20) scale(1.04)"/><use href="#esp-petalo" transform="rotate(20) scale(1.04)"/>
+                <use href="#esp-petalo" transform="scale(1.08)"/>
+              </g>
+              <g stroke="#5c4413" stroke-width="1" opacity=".7" fill="none">
+                <path d="M0-8V-46"/><path d="M-12-6L-26-40M12-6L26-40" transform="scale(.9)"/><path d="M-22-4L-44-30M22-4L44-30" transform="scale(.82)"/>
+              </g>
+              <circle r="12" fill="url(#esp-oro)" stroke="#5c4413" stroke-width="1.3"/><circle r="5" fill="#7a1f3d" stroke="#f3e2ae" stroke-width="1.4"/>
+            </g>
+            <g transform="translate(60 60) rotate(-45)"><use href="#esp-voluta"/></g>
+            <g transform="translate(340 60) rotate(45) scale(-1 1)"><use href="#esp-voluta"/></g>
+            <path d="M0 560V200A200 200 0 0 1 400 200V560ZM18 542V200A182 182 0 0 1 382 200V542Z" fill-rule="evenodd" fill="url(#esp-oro)"/>
+            <path d="M23 537V200A177 177 0 0 1 377 200V537Z" fill="none" stroke="#4a360c" stroke-width="3.4" opacity=".75"/>
+            <path d="M30 530V200A170 170 0 0 1 370 200V530Z" fill="none" stroke="#5c4413" stroke-width="7.4" stroke-linecap="round" stroke-dasharray="0 9.6"/>
+            <path d="M30 530V200A170 170 0 0 1 370 200V530Z" fill="none" stroke="url(#esp-oro)" stroke-width="5.6" stroke-linecap="round" stroke-dasharray="0 9.6"/>
+            <path d="M38 522V200A162 162 0 0 1 362 200V522ZM57 503V200A143 143 0 0 1 343 200V503Z" fill-rule="evenodd" fill="url(#esp-oroV)"/>
+            <path d="M38 522V200A162 162 0 0 1 362 200V522ZM57 503V200A143 143 0 0 1 343 200V503Z" fill-rule="evenodd" fill="url(#esp-talla)"/>
+            <path d="M57 503V200A143 143 0 0 1 343 200V503ZM61 499V200A139 139 0 0 1 339 200V499Z" fill-rule="evenodd" fill="#f1dca0"/>
+            <path d="M61 499V200A139 139 0 0 1 339 200V499ZM68 492V200A132 132 0 0 1 332 200V492Z" fill-rule="evenodd" fill="url(#esp-labio)"/>
+            <use href="#esp-rosa" x="0" y="200"/><use href="#esp-rosa" x="400" y="200"/>
+            <use href="#esp-rosa" x="6" y="554"/><use href="#esp-rosa" x="394" y="554"/>
+            <path d="M150 560H250C250 576 232 580 224 590C214 600 200 600 200 600C200 600 186 600 176 590C168 580 150 576 150 560Z" fill="url(#esp-oro)" stroke="#5c4413" stroke-width="1.3"/>
+            <path d="M170 566H230M178 574H222" stroke="#5c4413" stroke-width="1.1" opacity=".6" fill="none"/>
+            <circle cx="200" cy="584" r="5" fill="#7a1f3d" stroke="#f3e2ae" stroke-width="1.3"/>
+            <use href="#esp-bandas" fill="url(#esp-brillo)" id="esp-brillo-u"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="esp-panel">
+        <p class="esp-cuenta" id="esp-cuenta"></p>
+        <h3 class="esp-nombre" id="esp-nombre"></h3>
+        <p class="esp-marca" id="esp-marca" hidden></p>
+        <p class="esp-txt" id="esp-txt"></p>
+        <p class="esp-precio" id="esp-precio"></p>
+        <p class="esp-aviso" id="esp-aviso" hidden></p>
+
+        <div class="esp-mandos">
+          <button type="button" class="esp-fl" id="esp-prev" aria-label="Prenda anterior"><span aria-hidden="true">&#8592;</span></button>
+          <button type="button" class="esp-fl" id="esp-next" aria-label="Prenda siguiente"><span aria-hidden="true">&#8594;</span></button>
+          <button type="button" class="esp-limpiar" id="esp-limpiar">Limpiar el espejo</button>
+        </div>
+
+        <button type="button" class="esp-res" id="esp-res">Resérvalo para probártelo</button>
+
+        <ul class="esp-minis" id="esp-minis" aria-label="Todas las prendas de invitada y fiesta"></ul>
+        <p class="esp-ayuda" id="esp-ayuda">El vaho vuelve poco a poco si dejas el espejo quieto.</p>
+        <p class="esp-sr" id="esp-voz" aria-live="polite" aria-atomic="true"></p>
+      </div>
+    </div>
+
+    <!-- solo en la densidad sobria: sin vaho, todas las prendas de un vistazo -->
+    <div class="esp-lista" id="esp-lista" hidden>
+      <h3 class="esp-lista-tit">Todas las prendas de invitada y fiesta</h3>
+      <div class="esp-lista-grupos" id="esp-lista-grupos"></div>
+    </div>
+  </div>
+</section>
+
+  <!-- ============ 5. rebajas · antes y ahora: solo los precios que BOX ha publicado ============ -->
+  <section class="sec reb" id="rebajas" aria-labelledby="reb-tit">
+    <div class="env">
+      <header class="sec-cab">
+        <p class="eyebrow">Rebajas</p>
+        <h2 id="reb-tit" class="rev">Antes y <em>ahora</em></h2>
+        <p class="sec-cab__txt">Como lo escribimos en Instagram: lo que costaba, lo que cuesta y, si es la última, te lo decimos.</p>
+      </header>
+      <ul class="reb__lista" id="reb-lista"></ul>
+      <noscript><p class="sec-cab__txt">Trench Ferrache, talla M: antes 155,90 €, ahora 78 €. Chaquetón reversible de lana Van Dos: antes 230 €, ahora 161 €. Chaqueta Surkana: antes 139 €, ahora 97 €.</p></noscript>
+      <p class="reb__nota">Precios de las rebajas de enero y febrero de 2026, tal como los publicó BOX. <span class="pendiente">Por confirmar si siguen</span>: pregunta antes de pasar.</p>
+    </div>
+  </section>
+
+  <!-- ============ 6. la tienda por dentro, sobre su suelo · «Pisa y descubre» ============ -->
+  <section class="sec tienda" id="tienda" aria-labelledby="tienda-tit">
+    <div class="env">
+      <header class="sec-cab">
+        <p class="eyebrow">La tienda</p>
+        <h2 id="tienda-tit" class="rev">Pisa y verás <em>la tienda por dentro</em></h2>
+        <p class="sec-cab__txt">El suelo hidráulico blanco y negro sale en casi todas nuestras fotos. Pásale el dedo o el cursor por encima: cada baldosa que pisas se da la vuelta y enseña un trozo de la tienda.</p>
+      </header>
+
+      <div class="piso" id="piso">
+        <div class="piso__suelo">
+          <canvas id="piso-lienzo" class="piso__lienzo" tabindex="0" role="img" aria-label="Suelo de baldosas. Pisa con el cursor o el dedo, o usa las flechas y la tecla Intro, para dar la vuelta a las baldosas y ver un rincón de la tienda." aria-describedby="piso-ayuda"></canvas>
+          <p class="piso__ayuda" id="piso-ayuda">Flechas: mover el pie · Intro: pisar</p>
+        </div>
+        <div class="piso__lado">
+          <p class="eyebrow" id="piso-num">Rincón 1 de 6</p>
+          <div class="piso__medida"><div class="piso__barra"><i id="piso-barra"></i></div><p id="piso-por" class="mono">0 % descubierto</p></div>
+          <div class="piso__chips" id="piso-chips" role="group" aria-label="Elige un rincón"></div>
+          <div class="piso__botones"><button type="button" class="btn btn--azul" id="piso-otro">Otro rincón</button><button type="button" class="btn btn--hueco" id="piso-todo">Descubrirlo entero</button></div>
+          <div class="piso__ficha" id="piso-ficha" data-on="0">
+            <p class="piso__pend">Pisa el suelo y se ve qué hay debajo.</p>
+            <div class="piso__datos"><h3 id="piso-nom"></h3><p id="piso-txt"></p></div>
+          </div>
+          <p class="sr" id="piso-voz" role="status" aria-live="polite"></p>
+        </div>
+      </div>
+      <!-- densidad sobria: los rincones a la vista -->
+      <ul class="tienda-fotos" id="tienda-fotos">
+        <li><picture data-foto="f162"><source type="image/avif" srcset="img/fotos/f162-480.avif 480w, img/fotos/f162-800.avif 800w, img/fotos/f162-1080.avif 1080w" sizes="(max-width: 699px) 50vw, 25vw"><source type="image/webp" srcset="img/fotos/f162-480.webp 480w, img/fotos/f162-800.webp 800w, img/fotos/f162-1080.webp 1080w" sizes="(max-width: 699px) 50vw, 25vw"><img src="img/fotos/f162-800.jpg" srcset="img/fotos/f162-480.jpg 480w, img/fotos/f162-800.jpg 800w, img/fotos/f162-1080.jpg 1080w" sizes="(max-width: 699px) 50vw, 25vw" width="1080" height="1350" alt="El escaparate de BOX desde la calle, con su marco azul cielo y dos maniquíes" loading="lazy" decoding="async"></picture></li>
+        <li><picture data-foto="f125"><source type="image/avif" srcset="img/fotos/f125-480.avif 480w, img/fotos/f125-800.avif 800w, img/fotos/f125-1080.avif 1080w" sizes="(max-width: 699px) 50vw, 25vw"><source type="image/webp" srcset="img/fotos/f125-480.webp 480w, img/fotos/f125-800.webp 800w, img/fotos/f125-1080.webp 1080w" sizes="(max-width: 699px) 50vw, 25vw"><img src="img/fotos/f125-800.jpg" srcset="img/fotos/f125-480.jpg 480w, img/fotos/f125-800.jpg 800w, img/fotos/f125-1080.jpg 1080w" sizes="(max-width: 699px) 50vw, 25vw" width="1080" height="1350" alt="Un rincón de la tienda con el sofá gris, el espejo dorado y la celosía negra" loading="lazy" decoding="async"></picture></li>
+        <li><picture data-foto="f309"><source type="image/avif" srcset="img/fotos/f309-480.avif 480w, img/fotos/f309-800.avif 800w, img/fotos/f309-1080.avif 1080w" sizes="(max-width: 699px) 50vw, 25vw"><source type="image/webp" srcset="img/fotos/f309-480.webp 480w, img/fotos/f309-800.webp 800w, img/fotos/f309-1080.webp 1080w" sizes="(max-width: 699px) 50vw, 25vw"><img src="img/fotos/f309-800.jpg" srcset="img/fotos/f309-480.jpg 480w, img/fotos/f309-800.jpg 800w, img/fotos/f309-1080.jpg 1080w" sizes="(max-width: 699px) 50vw, 25vw" width="1080" height="1080" alt="La estantería de madera clara con luz dorada" loading="lazy" decoding="async"></picture></li>
+        <li><picture data-foto="f292"><source type="image/avif" srcset="img/fotos/f292-480.avif 480w, img/fotos/f292-800.avif 800w, img/fotos/f292-937.avif 937w" sizes="(max-width: 699px) 50vw, 25vw"><source type="image/webp" srcset="img/fotos/f292-480.webp 480w, img/fotos/f292-800.webp 800w, img/fotos/f292-937.webp 937w" sizes="(max-width: 699px) 50vw, 25vw"><img src="img/fotos/f292-800.jpg" srcset="img/fotos/f292-480.jpg 480w, img/fotos/f292-800.jpg 800w, img/fotos/f292-937.jpg 937w" sizes="(max-width: 699px) 50vw, 25vw" width="937" height="1171" alt="Una bufanda crema sobre el suelo hidráulico blanco y negro" loading="lazy" decoding="async"></picture></li>
+      </ul>
+
+      <div class="donde">
+        <div class="donde__datos">
+          <h3>Dónde estamos</h3>
+          <dl>
+            <div><dt>Dirección</dt><dd>Rúa do Hórreo, Carballo <span class="pendiente">número por confirmar</span><small>Calle peatonal del centro, con terrazas enfrente.</small></dd></div>
+            <div><dt>Horario</dt><dd><span class="pendiente">Horario por confirmar</span></dd></div>
+            <div><dt>Teléfono y WhatsApp</dt><dd><span class="pendiente">[teléfono]</span> <button type="button" class="enlace" data-wa="Hola, os escribo desde la web de BOX.">Escribir por WhatsApp</button></dd></div>
+            <div><dt>Redes</dt><dd><a href="https://www.instagram.com/boxhorreo/" rel="noopener" target="_blank">Instagram @boxhorreo</a> · <a href="https://www.facebook.com/p/Box-Horreo-100065150634786/" rel="noopener" target="_blank">Facebook</a></dd></div>
+          </dl>
+        </div>
+        <div class="mercadillo">
+          <picture data-foto="f94"><source type="image/avif" srcset="img/fotos/f94-480.avif 480w, img/fotos/f94-800.avif 800w, img/fotos/f94-1078.avif 1078w" sizes="(max-width: 899px) 40vw, 180px"><source type="image/webp" srcset="img/fotos/f94-480.webp 480w, img/fotos/f94-800.webp 800w, img/fotos/f94-1078.webp 1078w" sizes="(max-width: 899px) 40vw, 180px"><img src="img/fotos/f94-800.jpg" srcset="img/fotos/f94-480.jpg 480w, img/fotos/f94-800.jpg 800w, img/fotos/f94-1078.jpg 1078w" sizes="(max-width: 899px) 40vw, 180px" width="1078" height="1153" alt="El sello redondo del Mercadillo BOX, con una percha en el centro" loading="lazy" decoding="async"></picture>
+          <div>
+            <h3>El Mercadillo BOX</h3>
+            <p>De vez en cuando sacamos el Mercadillo BOX. Cuando lo hay, lo contamos en <a href="https://www.instagram.com/boxhorreo/" rel="noopener" target="_blank">Instagram</a>.</p>
+          </div>
+        </div>
+        <div class="mapa map-consent" id="mapa">
+          <div class="mapa__aviso">
+            <p>El mapa es de Google y, al abrirlo, Google puede guardar cookies en tu navegador.</p>
+            <button type="button" class="btn btn--hueco" id="mapa-btn">Ver el mapa</button>
+            <a href="https://www.google.com/maps/search/?api=1&amp;query=R%C3%BAa+do+H%C3%B3rreo%2C+Carballo" rel="noopener" target="_blank">Abrir en Google Maps</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 7. prepárame una caja + calendario (módulo: partes/caja.html, css/caja.css, js/caja.js) ============ -->
+  <section class="caja" id="reservar" aria-labelledby="caja-tit">
+  <div class="env">
+    <header class="caja-cab">
+      <p class="eyebrow">Reservar · probarte en tienda</p>
+      <h2 id="caja-tit">Prepárame una caja</h2>
+      <p class="caja-intro">Elige hasta tres prendas, cierra la caja y dinos cuándo te viene bien pasar. Te las dejamos en el probador para que te las pruebes sin prisa. En BOX se compra en la tienda: la caja no se envía.</p>
+      <p class="caja-sellos">
+        <span class="marca-sim">Simulación: no se envía ni se guarda nada</span>
+        <span class="pendiente">Horario supuesto, por confirmar</span>
+      </p>
+    </header>
+
+    <ol class="caja-pasos" id="caja-pasos" aria-label="Pasos para preparar la caja">
+      <li aria-current="step"><span class="caja-num" aria-hidden="true">1</span><span class="caja-pasonom">Prendas</span></li>
+      <li><span class="caja-num" aria-hidden="true">2</span><span class="caja-pasonom">Tallas y cierre</span></li>
+      <li><span class="caja-num" aria-hidden="true">3</span><span class="caja-pasonom">Día y hora</span></li>
+      <li><span class="caja-num" aria-hidden="true">4</span><span class="caja-pasonom">Mandar</span></li>
+    </ol>
+
+    <div class="caja-cuerpo">
+      <div class="caja-paneles">
+
+        <div class="caja-paso" id="caja-p1">
+          <h3 id="caja-t1" tabindex="-1">1 · Elige hasta tres prendas</h3>
+          <p class="caja-ayuda">Toca una prenda para meterla en la caja y otra vez para sacarla. Todas pesan lo mismo: lo de diario, lo de fiesta y todo lo del medio.</p>
+          <div class="caja-filtros" id="caja-filtros" role="group" aria-label="Filtrar por categoría"></div>
+          <ul class="caja-rejilla" id="caja-rejilla"><li class="caja-carga">Sacando las prendas del almacén…</li></ul>
+          <p class="caja-escribe"><button type="button" class="caja-link" data-escribe>¿Prefieres escribirnos?</button></p>
+        </div>
+
+        <div class="caja-paso" id="caja-p2" hidden>
+          <h3 id="caja-t2" tabindex="-1">2 · Tallas y cierre de la caja</h3>
+          <p class="caja-ayuda">si sabes tu talla, elígela; si no, la miramos en la tienda. <span class="pendiente">Tallas supuestas: BOX aún no ha publicado las que trabaja.</span></p>
+          <ul class="caja-tallas" id="caja-tallas"></ul>
+          <div class="caja-acciones">
+            <button type="button" class="btn btn--hueco" id="caja-p2-atras">Cambiar prendas</button>
+            <button type="button" class="btn" id="caja-cerrar">Cerrar la caja</button>
+          </div>
+          <p class="caja-escribe"><button type="button" class="caja-link" data-escribe>¿Prefieres escribirnos?</button></p>
+        </div>
+
+        <div class="caja-paso" id="caja-p3" hidden>
+          <h3 id="caja-t3" tabindex="-1">3 · ¿Cuándo pasas a probártela?</h3>
+          <p class="caja-ayuda">Elige día y hora. Cada prueba dura media hora. <span class="pendiente">Horario supuesto, por confirmar con BOX.</span></p>
+          <div class="caja-cal-env">
+            <div class="caja-cal-nav">
+              <button type="button" id="caja-ant" aria-label="Mes anterior"><svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true"><path d="M8 1 3 6l5 5" fill="none" stroke="currentColor" stroke-width="1.8"/></svg></button>
+              <b id="caja-mes" aria-live="polite"></b>
+              <button type="button" id="caja-sig-mes" aria-label="Mes siguiente"><svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true"><path d="m4 1 5 5-5 5" fill="none" stroke="currentColor" stroke-width="1.8"/></svg></button>
+            </div>
+            <div class="caja-cal" id="caja-cal" role="group" aria-label="Días del mes"></div>
+            <p class="caja-leyenda"><i class="caja-raya" aria-hidden="true"></i> Una rayita azul: quedan pocas horas ese día. Tachado: cerrado o completo.</p>
+          </div>
+          <div class="caja-horas-env">
+            <p class="caja-dia" id="caja-dia" aria-live="polite">Elige un día</p>
+            <div class="caja-horas" id="caja-horas" role="group" aria-label="Horas libres"></div>
+          </div>
+          <div class="caja-prox" id="caja-prox-env">
+            <p class="caja-subt">Los próximos huecos</p>
+            <div class="caja-proximos" id="caja-prox"></div>
+          </div>
+          <table class="caja-horario">
+            <caption>Horario <span class="pendiente">supuesto, por confirmar</span></caption>
+            <thead><tr><th scope="col">Días</th><th scope="col">Horas</th></tr></thead>
+            <tbody>
+              <tr><th scope="row">Lunes a viernes</th><td>10:00–13:30 y 17:00–20:30</td></tr>
+              <tr><th scope="row">Sábado</th><td>10:00–14:00</td></tr>
+              <tr><th scope="row">Domingos y festivos</th><td>Cerrado</td></tr>
+              <tr><th scope="row">Probador</th><td>30 minutos por cita</td></tr>
+            </tbody>
+          </table>
+          <div class="caja-acciones">
+            <button type="button" class="btn btn--hueco" id="caja-p3-atras">Volver a la caja</button>
+            <button type="button" class="btn" id="caja-p3-sig" disabled>Revisar y mandar</button>
+          </div>
+          <p class="caja-escribe"><button type="button" class="caja-link" data-escribe>¿Prefieres escribirnos?</button></p>
+        </div>
+
+        <div class="caja-paso" id="caja-p4" hidden>
+          <h3 id="caja-t4" tabindex="-1">4 · Revisa y mándanos la caja</h3>
+          <dl class="caja-resumen">
+            <div><dt>Prendas</dt><dd id="caja-res-prendas"></dd></div>
+            <div><dt>Día</dt><dd id="caja-res-dia"></dd></div>
+            <div><dt>Hora</dt><dd id="caja-res-hora"></dd></div>
+          </dl>
+          <p class="caja-campo">
+            <label for="caja-nombre">Tu nombre <span class="caja-opc">(opcional)</span></label>
+            <input type="text" id="caja-nombre" maxlength="40" autocomplete="off" spellcheck="false">
+          </p>
+          <div class="caja-acciones">
+            <button type="button" class="btn btn--hueco" id="caja-p4-atras">Cambiar día u hora</button>
+            <button type="button" class="btn btn--azul" id="caja-wa">Mandar por WhatsApp</button>
+          </div>
+          <p class="caja-nota">Esto solo abre WhatsApp con el mensaje ya escrito. La web no envía ni guarda tu nombre ni la cita: BOX te confirmará por WhatsApp que la caja te espera en el probador. <span class="marca-sim">Simulación</span></p>
+          <p class="caja-msg" id="caja-msg" role="status"></p>
+          <p class="caja-escribe"><button type="button" class="caja-link" data-escribe>¿Prefieres escribirnos?</button></p>
+        </div>
+
+      </div>
+
+      <aside class="caja-bandeja" id="caja-bandeja" aria-label="Tu caja">
+        <div class="caja-obj" id="caja-obj" aria-hidden="false">
+          <div class="caja-fondo" id="caja-slots"></div>
+          <span class="caja-solapa caja-solapa--i" id="caja-si" aria-hidden="true"></span>
+          <span class="caja-solapa caja-solapa--d" id="caja-sd" aria-hidden="true"></span>
+        </div>
+        <div class="caja-info">
+          <p class="caja-cuenta" id="caja-cuenta" tabindex="-1">Tu caja está vacía</p>
+          <ul class="caja-lista" id="caja-lista"></ul>
+          <button type="button" class="btn caja-sig" id="caja-sig" disabled>Continuar</button>
+        </div>
+      </aside>
+    </div>
+
+    <p class="sr" id="caja-vivo" role="status" aria-live="polite"></p>
+  </div>
+</section>
+
+</main>
+
+<!-- la cenefa de baldosa cierra la página; el pie es el suelo entero -->
+<div class="cenefa" aria-hidden="true"></div>
+<footer class="pie" id="pie">
+  <div class="pie__suelo" aria-hidden="true"></div>
+  <div class="pie__alfombra">
+    <svg class="pie__logo" viewBox="0 0 245 100" role="img" aria-label="BOX"><use href="#box-caja"/></svg>
+    <p class="pie__lema">Ropa de mujer en la rúa do Hórreo, Carballo.</p>
+    <div class="pie__cols">
+      <div><h2>Dónde</h2><p>Rúa do Hórreo · Carballo<br><span class="pendiente">número por confirmar</span></p></div>
+      <div><h2>Horario</h2><p><span class="pendiente">Horario por confirmar</span></p></div>
+      <div><h2>Escríbenos</h2><p><span class="pendiente">[teléfono]</span><br><a href="https://www.instagram.com/boxhorreo/" rel="noopener" target="_blank">Instagram</a> · <a href="https://www.facebook.com/p/Box-Horreo-100065150634786/" rel="noopener" target="_blank">Facebook</a></p></div>
+    </div>
+    <nav class="pie__legal" aria-label="Información legal">
+      <a href="aviso-legal.html">Aviso legal</a>
+      <a href="privacidad.html">Privacidad</a>
+      <a href="cookies.html">Cookies</a>
+      <a href="accesibilidad.html">Accesibilidad</a>
+    </nav>
+  </div>
+</footer>
+
+<!-- WhatsApp siempre a mano -->
+<button type="button" class="wa" id="wa" data-wa="Hola, os escribo desde la web de BOX." aria-label="Escribir a BOX por WhatsApp">
+  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.2A9.7 9.7 0 0 0 3.6 16.8L2.3 21.7l5-1.3A9.7 9.7 0 1 0 12 2.2Zm0 17.7c-1.5 0-2.9-.4-4.1-1.1l-.3-.2-3 .8.8-2.9-.2-.3A8 8 0 1 1 12 19.9Zm4.4-6c-.2-.1-1.4-.7-1.7-.8-.2-.1-.4-.1-.5.1l-.8.9c-.1.2-.3.2-.5.1a6.6 6.6 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.5-.4h-.5a.9.9 0 0 0-.6.3 2.7 2.7 0 0 0-.9 2c0 1.2.9 2.4 1 2.5.1.2 1.7 2.7 4.2 3.8 1.6.7 2.2.7 3 .6.5-.1 1.4-.6 1.6-1.2.2-.6.2-1 .1-1.2l-.5-.3Z"/></svg>
+  <span>WhatsApp</span>
+</button>
+<div class="aviso-tel" id="aviso-tel" role="status" hidden>
+  <p><b>Falta el número de BOX.</b> En cuanto lo tengamos, este botón abrirá WhatsApp con tu mensaje escrito. Mientras, escríbenos por <a href="https://www.instagram.com/boxhorreo/" rel="noopener" target="_blank">Instagram</a>.</p>
+</div>
+
+<!-- aviso de cookies -->
+<div class="cookies" id="cookies" role="region" aria-label="Aviso de cookies" hidden>
+  <p>Esta web no usa cookies de seguimiento. Solo guarda en tu navegador que ya has visto este aviso, y el mapa de Google se carga únicamente si lo pides. <a href="cookies.html">Más información</a></p>
+  <button type="button" class="btn" id="cookies-ok">Entendido</button>
+</div>
+
+<!-- MANDO DE MAQUETA: solo con ?revision. NO viaja al sitio del cliente (borrado en el README) -->
+<div class="mando" id="mando" hidden>
+  <p>Versión</p>
+  <div role="group" aria-label="Dos versiones de la misma web">
+    <button type="button" data-densidad="rotulo" aria-pressed="true">El rótulo</button>
+    <button type="button" data-densidad="sobria" aria-pressed="false">Sobria</button>
+  </div>
+</div>
+
+<script defer src="js/main.js?v=c7f5a12a"></script>
+<script defer src="js/espejo.js?v=9be6f1ec"></script>
+<script defer src="js/caja.js?v=698edee0"></script>
+</body>
+</html>

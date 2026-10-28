@@ -1,0 +1,22 @@
+/* Páginas legales y 404 de BOX (sobre base.css) */
+.legal-cab { border-bottom: 1px solid var(--linea); }
+.legal-cab .env { display: flex; align-items: center; justify-content: space-between; height: 72px; }
+.legal-logo img { width: 84px; height: auto; }
+.volver { color: var(--azul-texto); font-weight: 600; font-size: 15px; }
+.legal { padding: clamp(40px, 7vw, 90px) 0; }
+.legal .env { max-width: 760px; }
+.legal h1 { font-size: clamp(40px, 6vw, 68px); margin-bottom: 28px; }
+.legal h2 { font-size: clamp(24px, 2.6vw, 30px); margin: 40px 0 12px; }
+.legal p, .legal li { line-height: 1.65; color: var(--tinta-2); margin-bottom: 12px; }
+.legal dl { display: grid; grid-template-columns: max-content 1fr; gap: 8px 20px; margin: 18px 0; }
+.legal dt { font-weight: 600; }
+.legal dd { margin: 0; }
+.legal .aviso { border-left: 3px solid var(--aviso); padding: 10px 14px; background: var(--pared-2); color: var(--aviso); font-size: 15px; }
+.legal table { width: 100%; border-collapse: collapse; font-size: 15px; margin: 12px 0; display: block; overflow-x: auto; }
+.legal th, .legal td { text-align: left; padding: 10px 12px 10px 0; border-bottom: 1px solid var(--linea); vertical-align: top; }
+.legal code { font-size: .92em; background: var(--pared-2); padding: 1px 5px; border-radius: 3px; }
+.legal .grande { font: italic 400 clamp(22px, 2.6vw, 30px)/1.3 var(--f-titulo); color: var(--tinta); }
+.legal-pie { border-top: 1px solid var(--linea); padding: 24px var(--gutter) 40px; background: #F6F4EF url('../img/baldosa.svg') left top / 48px 48px; }
+.legal-pie .env { display: flex; flex-wrap: wrap; gap: 8px 20px; background: var(--pared); padding: 14px 18px; border: 1.5px solid var(--tinta); border-radius: var(--radio); width: fit-content; max-width: 100%; }
+.legal-pie a { color: var(--tinta-2); font-size: 14px; }
+@media (max-width: 520px) { .legal dl { grid-template-columns: 1fr; gap: 2px; } .legal dd { margin-bottom: 10px; } }

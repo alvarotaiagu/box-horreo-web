@@ -1,0 +1,117 @@
+<section class="caja" id="reservar" aria-labelledby="caja-tit">
+  <div class="env">
+    <header class="caja-cab">
+      <p class="eyebrow">Reservar · probarte en tienda</p>
+      <h2 id="caja-tit">Prepárame una caja</h2>
+      <p class="caja-intro">Elige hasta tres prendas, cierra la caja y dinos cuándo te viene bien pasar. Te las dejamos en el probador para que te las pruebes sin prisa. En BOX se compra en la tienda: la caja no se envía.</p>
+      <p class="caja-sellos">
+        <span class="marca-sim">Simulación: no se envía ni se guarda nada</span>
+        <span class="pendiente">Horario supuesto, por confirmar</span>
+      </p>
+    </header>
+
+    <ol class="caja-pasos" id="caja-pasos" aria-label="Pasos para preparar la caja">
+      <li aria-current="step"><span class="caja-num" aria-hidden="true">1</span><span class="caja-pasonom">Prendas</span></li>
+      <li><span class="caja-num" aria-hidden="true">2</span><span class="caja-pasonom">Tallas y cierre</span></li>
+      <li><span class="caja-num" aria-hidden="true">3</span><span class="caja-pasonom">Día y hora</span></li>
+      <li><span class="caja-num" aria-hidden="true">4</span><span class="caja-pasonom">Mandar</span></li>
+    </ol>
+
+    <div class="caja-cuerpo">
+      <div class="caja-paneles">
+
+        <div class="caja-paso" id="caja-p1">
+          <h3 id="caja-t1" tabindex="-1">1 · Elige hasta tres prendas</h3>
+          <p class="caja-ayuda">Toca una prenda para meterla en la caja y otra vez para sacarla. Todas pesan lo mismo: lo de diario, lo de fiesta y todo lo del medio.</p>
+          <div class="caja-filtros" id="caja-filtros" role="group" aria-label="Filtrar por categoría"></div>
+          <ul class="caja-rejilla" id="caja-rejilla"><li class="caja-carga">Sacando las prendas del almacén…</li></ul>
+          <p class="caja-escribe"><button type="button" class="caja-link" data-escribe>¿Prefieres escribirnos?</button></p>
+        </div>
+
+        <div class="caja-paso" id="caja-p2" hidden>
+          <h3 id="caja-t2" tabindex="-1">2 · Tallas y cierre de la caja</h3>
+          <p class="caja-ayuda">si sabes tu talla, elígela; si no, la miramos en la tienda. <span class="pendiente">Tallas supuestas: BOX aún no ha publicado las que trabaja.</span></p>
+          <ul class="caja-tallas" id="caja-tallas"></ul>
+          <div class="caja-acciones">
+            <button type="button" class="btn btn--hueco" id="caja-p2-atras">Cambiar prendas</button>
+            <button type="button" class="btn" id="caja-cerrar">Cerrar la caja</button>
+          </div>
+          <p class="caja-escribe"><button type="button" class="caja-link" data-escribe>¿Prefieres escribirnos?</button></p>
+        </div>
+
+        <div class="caja-paso" id="caja-p3" hidden>
+          <h3 id="caja-t3" tabindex="-1">3 · ¿Cuándo pasas a probártela?</h3>
+          <p class="caja-ayuda">Elige día y hora. Cada prueba dura media hora. <span class="pendiente">Horario supuesto, por confirmar con BOX.</span></p>
+          <div class="caja-cal-env">
+            <div class="caja-cal-nav">
+              <button type="button" id="caja-ant" aria-label="Mes anterior"><svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true"><path d="M8 1 3 6l5 5" fill="none" stroke="currentColor" stroke-width="1.8"/></svg></button>
+              <b id="caja-mes" aria-live="polite"></b>
+              <button type="button" id="caja-sig-mes" aria-label="Mes siguiente"><svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true"><path d="m4 1 5 5-5 5" fill="none" stroke="currentColor" stroke-width="1.8"/></svg></button>
+            </div>
+            <div class="caja-cal" id="caja-cal" role="group" aria-label="Días del mes"></div>
+            <p class="caja-leyenda"><i class="caja-raya" aria-hidden="true"></i> Una rayita azul: quedan pocas horas ese día. Tachado: cerrado o completo.</p>
+          </div>
+          <div class="caja-horas-env">
+            <p class="caja-dia" id="caja-dia" aria-live="polite">Elige un día</p>
+            <div class="caja-horas" id="caja-horas" role="group" aria-label="Horas libres"></div>
+          </div>
+          <div class="caja-prox" id="caja-prox-env">
+            <p class="caja-subt">Los próximos huecos</p>
+            <div class="caja-proximos" id="caja-prox"></div>
+          </div>
+          <table class="caja-horario">
+            <caption>Horario <span class="pendiente">supuesto, por confirmar</span></caption>
+            <thead><tr><th scope="col">Días</th><th scope="col">Horas</th></tr></thead>
+            <tbody>
+              <tr><th scope="row">Lunes a viernes</th><td>10:00–13:30 y 17:00–20:30</td></tr>
+              <tr><th scope="row">Sábado</th><td>10:00–14:00</td></tr>
+              <tr><th scope="row">Domingos y festivos</th><td>Cerrado</td></tr>
+              <tr><th scope="row">Probador</th><td>30 minutos por cita</td></tr>
+            </tbody>
+          </table>
+          <div class="caja-acciones">
+            <button type="button" class="btn btn--hueco" id="caja-p3-atras">Volver a la caja</button>
+            <button type="button" class="btn" id="caja-p3-sig" disabled>Revisar y mandar</button>
+          </div>
+          <p class="caja-escribe"><button type="button" class="caja-link" data-escribe>¿Prefieres escribirnos?</button></p>
+        </div>
+
+        <div class="caja-paso" id="caja-p4" hidden>
+          <h3 id="caja-t4" tabindex="-1">4 · Revisa y mándanos la caja</h3>
+          <dl class="caja-resumen">
+            <div><dt>Prendas</dt><dd id="caja-res-prendas"></dd></div>
+            <div><dt>Día</dt><dd id="caja-res-dia"></dd></div>
+            <div><dt>Hora</dt><dd id="caja-res-hora"></dd></div>
+          </dl>
+          <p class="caja-campo">
+            <label for="caja-nombre">Tu nombre <span class="caja-opc">(opcional)</span></label>
+            <input type="text" id="caja-nombre" maxlength="40" autocomplete="off" spellcheck="false">
+          </p>
+          <div class="caja-acciones">
+            <button type="button" class="btn btn--hueco" id="caja-p4-atras">Cambiar día u hora</button>
+            <button type="button" class="btn btn--azul" id="caja-wa">Mandar por WhatsApp</button>
+          </div>
+          <p class="caja-nota">Esto solo abre WhatsApp con el mensaje ya escrito. La web no envía ni guarda tu nombre ni la cita: BOX te confirmará por WhatsApp que la caja te espera en el probador. <span class="marca-sim">Simulación</span></p>
+          <p class="caja-msg" id="caja-msg" role="status"></p>
+          <p class="caja-escribe"><button type="button" class="caja-link" data-escribe>¿Prefieres escribirnos?</button></p>
+        </div>
+
+      </div>
+
+      <aside class="caja-bandeja" id="caja-bandeja" aria-label="Tu caja">
+        <div class="caja-obj" id="caja-obj" aria-hidden="false">
+          <div class="caja-fondo" id="caja-slots"></div>
+          <span class="caja-solapa caja-solapa--i" id="caja-si" aria-hidden="true"></span>
+          <span class="caja-solapa caja-solapa--d" id="caja-sd" aria-hidden="true"></span>
+        </div>
+        <div class="caja-info">
+          <p class="caja-cuenta" id="caja-cuenta" tabindex="-1">Tu caja está vacía</p>
+          <ul class="caja-lista" id="caja-lista"></ul>
+          <button type="button" class="btn caja-sig" id="caja-sig" disabled>Continuar</button>
+        </div>
+      </aside>
+    </div>
+
+    <p class="sr" id="caja-vivo" role="status" aria-live="polite"></p>
+  </div>
+</section>
