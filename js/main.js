@@ -549,6 +549,9 @@
   });
 
   d.addEventListener('click', (e) => { const b = e.target.closest('[data-wa]'); if (b) B.whatsapp(b.dataset.wa); });
+  // el botón flotante de WhatsApp se aparta mientras se ve la caja: tapaba su barra y ella ya lleva su enlace
+  const secCaja = $('reservar');
+  if (secCaja) new IntersectionObserver((es) => h.classList.toggle('en-caja', es[0].isIntersecting), { rootMargin: '0px 0px -12% 0px' }).observe(secCaja);
 
   const CLAVE = 'box-cookies-vistas', ck = $('cookies');
   let vistas0 = false; try { vistas0 = localStorage.getItem(CLAVE) === '1'; } catch (e) {}

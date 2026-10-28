@@ -200,6 +200,11 @@ try {
       return { hay: !!band, dentro: r ? r.left >= -.5 && r.right <= innerWidth + .5 : false, visible: r ? r.bottom > 0 && r.top < innerHeight : false, ancho: document.documentElement.scrollWidth <= innerWidth };
     });
     comprobar(c.hay && c.dentro && c.visible && c.ancho, `${w}×${hh}: la bandeja de la caja se ve y cabe`, c);
+    await page.waitForTimeout(500);
+    comprobar(!(await page.isVisible('#wa')), `${w}×${hh}: en la caja, el WhatsApp flotante se aparta (no pisa la barra)`);
+    await page.evaluate(() => document.getElementById('rebajas').scrollIntoView({ behavior: 'instant' }));
+    await page.waitForTimeout(300);
+    comprobar(await page.isVisible('#wa'), `${w}×${hh}: fuera de la caja, el WhatsApp vuelve`);
     // la barra del móvil: cambiar solo el alto no mueve la página
     const antes = await page.evaluate(() => document.getElementById('rebajas').getBoundingClientRect().top + scrollY);
     await page.setViewportSize({ width: w, height: hh + 56 }); await page.waitForTimeout(120);
