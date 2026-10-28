@@ -65,7 +65,7 @@
   // posición de la luz (-1..1) → ángulo y altura: lejos del centro, luz más rasante
   const polar = (x, y) => { const r = Math.min(1, Math.hypot(x, y)); return [Math.atan2(y, x) / D, lerp(56, 22, Math.pow(r, .8))]; };
   const sombras = (gS, gC) => { gS.setAttribute('filter', 'url(#som-b)'); gC.setAttribute('filter', 'url(#som-n)'); gS.setAttribute('fill', '#5B4630'); gS.setAttribute('fill-opacity', '.30'); gC.setAttribute('fill', '#3A2A18'); gC.setAttribute('fill-opacity', '.34'); };
-  const aplicaLuz = motorLuz($('rel-luz'), $('rel-dif'), [[$('rot-soms'), 1], [$('rot-somc'), .3], [$('cort-soms'), 1], [$('cort-somc'), .3]]);
+  const aplicaLuz = motorLuz($('rel-luz'), $('rel-dif'), [[$('rot-soms'), 1], [$('rot-somc'), .3]]);
 
   // =====================================================================
   //  Portada: el rótulo en relieve; la ropa solo se ve por los cortes
@@ -130,69 +130,101 @@
   }
   colocaGaps(); pintaLuz();
 
+  // la portada entra cuando la cortina EMPIEZA a irse; el rótulo no se anima aquí: llega volando desde la cortina
   const entraPortada = () => {
     if (!MOV) return;
-    anima(rot, [{ transform: 'scale(1.1)', opacity: .35 }, { transform: 'none', opacity: 1 }], { duration: 1700 });
-    anima($('cab'), [{ opacity: 0, transform: 'translateY(-14px)' }, { opacity: 1, transform: 'none' }], { duration: 1100, delay: 350, fill: 'both' });
-    portada.querySelectorAll('.ln > *').forEach((l, i) => anima(l, [{ transform: 'translateY(112%)' }, { transform: 'none' }], { duration: 1300, delay: 250 + i * 150, fill: 'both' }));
-    portada.querySelectorAll('.portada__der > *').forEach((e, i) => anima(e, [{ opacity: 0, transform: 'translateY(22px)' }, { opacity: 1, transform: 'none' }], { duration: 1200, delay: 600 + i * 150, fill: 'both' }));
-    anima(portada.querySelector('.portada__pie'), [{ opacity: 0 }, { opacity: 1 }], { duration: 1000, delay: 1000, easing: 'ease-out', fill: 'both' });
+    anima($('cab'), [{ opacity: 0, transform: 'translateY(-14px)' }, { opacity: 1, transform: 'none' }], { duration: 1100, delay: 250, fill: 'both' });
+    portada.querySelectorAll('.ln > *').forEach((l, i) => anima(l, [{ transform: 'translateY(112%)' }, { transform: 'none' }], { duration: 1300, delay: 200 + i * 140, fill: 'both' }));
+    portada.querySelectorAll('.portada__der > *').forEach((e, i) => anima(e, [{ opacity: 0, transform: 'translateY(22px)' }, { opacity: 1, transform: 'none' }], { duration: 1200, delay: 450 + i * 140, fill: 'both' }));
+    anima(portada.querySelector('.portada__pie'), [{ opacity: 0 }, { opacity: 1 }], { duration: 1000, delay: 800, easing: 'ease-out', fill: 'both' });
   };
   B.alAbrirse(entraPortada);
 
   // =====================================================================
-  //  Cortina: las piezas llegan, la luz barre, la caja de la O abre sus solapas y se entra por ella
+  //  Cortina: las piezas llegan, la luz barre, la caja de la O abre sus solapas y enseña la prenda,
+  //  se cierra hasta dejar la ranura y el rótulo vuela a su sitio en la portada.
+  //  Rendimiento: cada pieza es una capa con el relieve pintado UNA vez (luz fija, la de reposo de la portada);
+  //  todo lo que se mueve es transform u opacity, así que lo hace la tarjeta gráfica sin repintar el filtro.
   // =====================================================================
   (function cortina() {
     const cort = $('cortina');
-    if (!cort || !MOV || B.cortinaFuera) { B.retirarCortina(); return; }
+    if (!cort || !MOV || B.cortinaFuera) { h.classList.add('rot-listo'); B.retirarCortina(); return; }
     B.cortinaEnMarcha = true;
     clearTimeout(window.__redCortina);
-    window.__redCortina = setTimeout(() => B.retirarCortina(), 7000);
-    const cSvg = $('cort-svg'), cPared = $('cort-pared'), haz = $('cort-haz'), cPie = $('cort-pie'), cFoto = $('cort-foto'), cG = $('cort-cuerpos');
-    const cc = mk(cG, '#F8F5F0'), cs1 = mk($('cort-soms'), null), cs2 = mk($('cort-somc'), null);
-    sombras($('cort-soms'), $('cort-somc'));
-    svgEl(cFoto, 'image', { href: B.foto('f0', 800, 'webp'), x: 70, y: -6, width: 86, height: 112, preserveAspectRatio: 'xMidYMid slice' });
-    const COR = [cc, cs1, cs2];
+    window.__redCortina = setTimeout(() => { h.classList.add('rot-listo'); B.retirarCortina(); }, 7000);
+    const cRot = $('cort-rot'), cPared = $('cort-pared'), haz = $('cort-haz'), cPie = $('cort-pie'), cFoto = $('cort-foto'), cImg = $('cort-img');
+    // mismo tamaño que el rótulo de la portada: el vuelo final es solo un desplazamiento (sin reescalar la capa)
+    const ancho = rot.getBoundingClientRect().width;
+    if (ancho > 40) cRot.style.width = ancho + 'px';
+    cImg.src = B.foto('f0', 800, 'webp');
+    // filtro de relieve fijo para la cortina (el de la portada, #rel, lo mueve su bucle de luz)
+    const [aR, alR] = polar(LZ.x, LZ.y);
+    const fC = $('rel').cloneNode(true); fC.id = 'rel-c';
+    const fLuz = fC.querySelector('feDistantLight'), fDif = fC.querySelector('feDiffuseLighting');
+    fLuz.removeAttribute('id'); fDif.removeAttribute('id');
+    fLuz.setAttribute('azimuth', (((aR % 360) + 360) % 360).toFixed(1)); fLuz.setAttribute('elevation', alR.toFixed(1));
+    fDif.setAttribute('diffuseConstant', (1 / Math.sin(alR * D)).toFixed(3));
+    $('rel').parentNode.appendChild(fC);
+    const sombraDe = (ang, alt) => { const len = clamp(6 / Math.tan(alt * D), 2.5, 13); return [-Math.cos(ang * D) * len, -Math.sin(ang * D) * len]; };
+    const [sxR, syR] = sombraDe(aR, alR), [sx0, sy0] = sombraDe(185, 24);
+    // reposo = los huecos de la portada en calma (GB), para que el aterrizaje case con su rótulo
+    const REST = [[-GB.B / 2, 0], [GB.B / 2, -GB.Bh / 2], [GB.B / 2, GB.Bh / 2], [-GB.O / 2, 0], [GB.O / 2, 0], [0, 0], [GB.X1 * .55, -GB.X1 * .83], [-GB.X2 * .55, GB.X2 * .83]];
     const OFF = [[-150, 10], [-10, -130], [0, 140], [-90, 110], [110, -110], [170, 20], [80, -130], [-100, 130]];
-    for (let i = 0; i < 8; i++) pon(COR, i, OFF[i][0], OFF[i][1]);
+    const OX = [0, 0, 0, 76, 150, 0, 0, 0]; // las solapas se abren contra su borde de fuera
+    const capa = (padre, cls) => { const s = d.createElementNS(NS, 'svg'); s.setAttribute('viewBox', '0 0 245 100'); s.setAttribute('class', cls); padre.appendChild(s); return s; };
+    const piezas = PD.map((dd, i) => {
+      const w = el('div', 'cp');
+      if (OX[i]) w.style.transformOrigin = (OX[i] / 245 * 100).toFixed(2) + '% 50%';
+      const sa = capa(w, 'cp-s'), sc = capa(w, 'cp-s'), cuerpo = capa(w, 'cp-c');
+      svgEl(sa, 'path', { d: dd, fill: '#5B4630', 'fill-opacity': '.30', filter: 'url(#som-b)' });
+      svgEl(sc, 'path', { d: dd, fill: '#3A2A18', 'fill-opacity': '.34', filter: 'url(#som-n)' });
+      svgEl(cuerpo, 'path', { d: dd, fill: '#F8F5F0', filter: 'url(#rel-c)', stroke: 'rgb(91 70 48 / .22)', 'stroke-width': '.45', 'stroke-linejoin': 'round' });
+      cRot.appendChild(w);
+      return { w, sa, sc };
+    });
     cortinando = true;
     let fuera = false;
     const acabar = () => {
       if (fuera) return; fuera = true;
-      cortinando = false; B.retirarCortina(); arranca();
+      h.classList.add('rot-listo'); cortinando = false; B.retirarCortina(); arranca();
     };
     // saltarla: un toque o una tecla
-    const saltar = () => { if (fuera) return; B.abrir(); anima(cort, [{ opacity: 1 }, { opacity: 0 }], { duration: 300, easing: 'ease-out' }).then(acabar); };
+    const saltar = () => { if (fuera) return; B.abrir(); h.classList.add('rot-listo'); anima(cort, [{ opacity: 1 }, { opacity: 0 }], { duration: 300, easing: 'ease-out' }).then(acabar); };
     cort.addEventListener('pointerdown', saltar, { once: true });
     d.addEventListener('keydown', saltar, { once: true });
-    const [aR, alR] = polar(-.55, -.65);
+    const IO = 'cubic-bezier(.65,0,.35,1)', CURVA = 'cubic-bezier(.45,0,.55,1)';
     (async () => {
-      await espera(120);
-      // la luz: de izquierda a derecha por encima y de vuelta a su sitio de reposo
-      tw(2700, (k) => { if (fuera) return; let a, al; if (k < .74) { const q = eIO(k / .74); a = lerp(185, 352, q); al = lerp(24, 36, Math.sin(q * Math.PI) * .6 + q * .4); } else { const q = eIO((k - .74) / .26); a = lerp(352, aR + 360, q); al = lerp(36, alR, q); } aplicaLuz(a, al); }, lin);
-      anima(cPared, [{ backgroundColor: '#E6E0D5' }, { backgroundColor: '#F4F1EC' }], { duration: 2100, delay: 250, easing: 'cubic-bezier(.45,0,.55,1)' });
-      anima(haz, [{ transform: 'translateX(-130%) skewX(-18deg)', opacity: 0 }, { opacity: 1, offset: .18 }, { opacity: 1, offset: .82 }, { transform: 'translateX(250%) skewX(-18deg)', opacity: 0 }], { duration: 1900, delay: 300, easing: 'cubic-bezier(.45,0,.55,1)' });
-      anima(cPie, [{ opacity: 0 }, { opacity: 1 }], { duration: 900, delay: 650, easing: 'ease-out' });
-      // 1. las ocho piezas llegan, cada una desde su lado
-      await tw(1800, (k) => {
-        if (fuera) return;
-        for (let i = 0; i < 8; i++) { const q = clamp((k * 1800 - i * 95) / 1100, 0, 1), e = 1 - eOut(q); pon(COR, i, OFF[i][0] * e, OFF[i][1] * e); }
-      }, lin);
-      if (fuera) return;
-      await espera(240); if (fuera) return;
-      // 2. la caja de la O abre sus dos solapas y deja ver lo de dentro
-      cFoto.setAttribute('opacity', 1);
-      await tw(700, (k) => { if (fuera) return; const s = 1 - .88 * k; pon(COR, 3, 0, 0, s, 76); pon(COR, 4, 0, 0, s, 150); }, eIO);
-      if (fuera) return;
-      // 3. se entra por ella: zoom hacia la O mientras la portada se acerca a su sitio
-      cG.removeAttribute('filter'); $('cort-soms').style.display = 'none'; $('cort-somc').style.display = 'none';
+      await espera(100);
+      const u = cRot.getBoundingClientRect().width / 245; // px por unidad del rótulo
+      const t = (i, s) => `translate(${(REST[i][0] * u).toFixed(1)}px, ${(REST[i][1] * u).toFixed(1)}px)` + (s != null ? ` scaleX(${s})` : '');
+      // 1. las ocho piezas llegan, cada una desde su lado; la luz barre y sus sombras se mueven con ella
+      piezas.forEach((p, i) => {
+        p.w.animate([{ transform: `translate(${((REST[i][0] + OFF[i][0]) * u).toFixed(1)}px, ${((REST[i][1] + OFF[i][1]) * u).toFixed(1)}px)`, opacity: 0 }, { opacity: 1, offset: .28 }, { transform: t(i), opacity: 1 }],
+          { duration: 1150, delay: i * 85, easing: EXPO, fill: 'both' });
+        [[p.sa, 1], [p.sc, .3]].forEach(([s, k]) => s.animate([{ transform: `translate(${(sx0 * k * u).toFixed(1)}px, ${(sy0 * k * u).toFixed(1)}px)` }, { transform: `translate(${(sxR * k * u).toFixed(1)}px, ${(syR * k * u).toFixed(1)}px)` }],
+          { duration: 2300, delay: 150, easing: CURVA, fill: 'both' }));
+      });
+      anima(cPared, [{ backgroundColor: '#E6E0D5' }, { backgroundColor: '#F4F1EC' }], { duration: 2000, delay: 200, easing: CURVA });
+      anima(haz, [{ transform: 'translateX(-130%) skewX(-18deg)', opacity: 0 }, { opacity: 1, offset: .18 }, { opacity: 1, offset: .82 }, { transform: 'translateX(250%) skewX(-18deg)', opacity: 0 }], { duration: 1800, delay: 250, easing: CURVA });
+      anima(cPie, [{ opacity: 0 }, { opacity: 1 }], { duration: 800, delay: 600, easing: 'ease-out' });
+      await espera(1750); if (fuera) return;
+      // 2. la caja de la O abre sus dos solapas y enseña la prenda que hay dentro
+      anima(cFoto, [{ opacity: 0 }, { opacity: 1 }], { duration: 260, easing: 'linear' });
+      anima(cImg, [{ transform: 'scale(1.12)' }, { transform: 'none' }], { duration: 1400 });
+      [3, 4].forEach((i) => piezas[i].w.animate([{ transform: t(i, 1) }, { transform: t(i, .12) }], { duration: 650, easing: IO, fill: 'forwards' }));
+      await espera(650 + 280); if (fuera) return;
+      // 3. la caja se cierra hasta dejar la ranura y el rótulo vuela a su sitio en la portada; la pared se va y entra la portada
+      const r = rot.getBoundingClientRect(), c = cRot.getBoundingClientRect();
+      const dx = r.left + r.width / 2 - (c.left + c.width / 2), dy = r.top + r.height / 2 - (c.top + c.height / 2), esc = r.width / c.width;
       B.abrir();
+      [3, 4].forEach((i) => piezas[i].w.animate([{ transform: t(i, .12) }, { transform: t(i, 1) }], { duration: 760, easing: IO, fill: 'forwards' }));
       anima(cPie, [{ opacity: 1 }, { opacity: 0 }], { duration: 300, easing: 'linear' });
-      anima(portada.querySelector('.portada__in'), [{ transform: 'scale(1.06)' }, { transform: 'none' }], { duration: 1700 });
-      await tw(1000, (k) => { if (fuera) return; cSvg.style.transform = `scale(${Math.exp(Math.log(10) * k).toFixed(3)})`; cPared.style.opacity = clamp(1 - (k - .15) / .5, 0, 1); }, eIO);
+      anima(cPared, [{ opacity: 1 }, { opacity: 0 }], { duration: 700, delay: 120, easing: 'ease-in-out' });
+      await anima(cRot, [{ transform: 'none' }, { transform: `translate(${dx.toFixed(1)}px, ${dy.toFixed(1)}px)` + (Math.abs(esc - 1) > .01 ? ` scale(${esc.toFixed(3)})` : '') }], { duration: 900, easing: IO });
       if (fuera) return;
-      await anima(cort, [{ opacity: 1 }, { opacity: 0 }], { duration: 380, easing: 'ease-out' });
+      // 4. aterriza: el rótulo de la portada aparece debajo (con la ropa en las ranuras) y la cortina se funde encima
+      h.classList.add('rot-listo');
+      await anima(cort, [{ opacity: 1 }, { opacity: 0 }], { duration: 260, easing: 'ease-out' });
       acabar();
     })();
   })();

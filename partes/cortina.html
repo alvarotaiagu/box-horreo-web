@@ -1,14 +1,12 @@
-<!-- cortina de entrada: el rótulo se monta pieza a pieza con luz rasante, la caja de la O abre sus solapas y se entra por ella (js/main.js) -->
+<!-- cortina de entrada: el rótulo se monta pieza a pieza con luz rasante, la caja de la O abre sus solapas y enseña la prenda,
+     se vuelve a cerrar hasta dejar la ranura y el rótulo entero vuela a su sitio en la portada (js/main.js).
+     Cada pieza es una capa propia con el relieve pintado una vez: todo el movimiento es transform/opacity (tarjeta gráfica). -->
 <div class="cortina" id="cortina" aria-hidden="true">
   <div class="cortina__pared" id="cort-pared"></div>
   <div class="cortina__centro">
-    <svg class="cortina__svg" id="cort-svg" viewBox="0 0 245 100" overflow="visible">
-      <defs><clipPath id="cort-clip"><path d="M90 0H136Q150 0 150 14V86Q150 100 136 100H90Q76 100 76 86V14Q76 0 90 0Z"/></clipPath></defs>
-      <g id="cort-foto" clip-path="url(#cort-clip)" opacity="0"></g>
-      <g id="cort-soms" class="rot__som"></g>
-      <g id="cort-somc" class="rot__som"></g>
-      <g id="cort-cuerpos" class="rot__cuerpos" filter="url(#rel)"></g>
-    </svg>
+    <div class="cortina__rot" id="cort-rot">
+      <div class="cortina__foto" id="cort-foto"><img id="cort-img" alt=""></div>
+    </div>
   </div>
   <div class="cortina__haz" id="cort-haz"></div>
   <p class="cortina__pie" id="cort-pie">Rúa do Hórreo · Carballo</p>

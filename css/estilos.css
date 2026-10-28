@@ -27,13 +27,22 @@ html.cortina-activa body { overflow: hidden; }
 .cortina { position: fixed; inset: 0; z-index: 150; overflow: hidden; pointer-events: auto; }
 .cortina__pared { position: absolute; inset: 0; background: #E6E0D5; }
 .cortina__centro { position: absolute; inset: 0; display: grid; place-items: center; }
-.cortina__svg { width: min(64vw, 820px); height: auto; aspect-ratio: 245 / 100; overflow: visible; transform-origin: 46.12% 50%; will-change: transform; }
+/* el rótulo de la cortina mide lo mismo que el de la portada (main.js pone el ancho) y vuela hasta él */
+.cortina__rot { position: relative; width: min(64vw, 820px); aspect-ratio: 245 / 100; will-change: transform; }
+.cortina__rot .cp, .cortina__rot .cp svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.cortina__rot .cp { will-change: transform, opacity; opacity: 0; }
+.cortina__rot .cp-s { will-change: transform; }
+/* lo que hay dentro de la caja: la prenda, con la forma de la O-caja (x 76–150 de 245, esquinas de 14) */
+.cortina__foto { position: absolute; left: 31.02%; width: 30.2%; top: 0; height: 100%; border-radius: 18.9% / 14%; overflow: hidden; opacity: 0; background: #D9D2C6; will-change: opacity; }
+.cortina__foto img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 38%; will-change: transform; }
+/* la portada no enseña su rótulo hasta que aterriza el de la cortina */
+html.cortina-activa:not(.rot-listo) .rot { visibility: hidden; }
 .cortina__haz { position: absolute; top: -12%; bottom: -12%; left: 0; width: 46%; opacity: 0; pointer-events: none;
   background: linear-gradient(90deg, rgb(255 253 246 / 0) 0, rgb(255 253 246 / .55) 38%, rgb(255 254 250 / .95) 52%, rgb(255 253 246 / .4) 70%, rgb(255 253 246 / 0) 100%);
   transform: translateX(-130%) skewX(-18deg); }
 .cortina__pie { position: absolute; left: 0; right: 0; bottom: clamp(24px, 5vh, 48px); text-align: center; font-size: 12.5px; letter-spacing: .32em; text-transform: uppercase; color: var(--tinta-2); opacity: 0; padding-left: .32em; }
 html.cortina-fuera .cortina, html.sin-movimiento .cortina { display: none; }
-@media (max-width: 640px) { .cortina__svg { width: 88vw; } }
+@media (max-width: 640px) { .cortina__rot { width: 88vw; } }
 
 /* el relieve: cuerpos de las letras (portada, cortina y ranura) */
 .rot__cuerpos path { stroke: rgb(91 70 48 / .22); stroke-width: .45; stroke-linejoin: round; }

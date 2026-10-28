@@ -215,13 +215,16 @@ try {
     const { ctx, page } = await nuevo({ reducedMotion: 'no-preference' });
     await ctx.addInitScript(sinCookies);
     await page.goto(BASE + 'index.html', { waitUntil: 'domcontentloaded' });
-    await page.waitForFunction(() => document.querySelectorAll('#cort-cuerpos path').length === 8);
+    await page.waitForFunction(() => document.querySelectorAll('#cort-rot .cp').length === 8);
     const tapa = await page.evaluate(() => { const c = document.getElementById('cortina'); const r = c.getBoundingClientRect(); return getComputedStyle(c).display !== 'none' && r.width >= innerWidth && r.height >= innerHeight; });
     comprobar(tapa, 'cortina: tapa la pantalla al cargar');
-    const pieza = () => page.evaluate(() => ({ t: document.querySelector('#cort-cuerpos path:nth-child(8)').getAttribute('transform') || '', fuera: document.documentElement.classList.contains('cortina-fuera') }));
+    const pieza = () => page.evaluate(() => ({ t: getComputedStyle(document.querySelectorAll('#cort-rot .cp')[7]).transform, fuera: document.documentElement.classList.contains('cortina-fuera') }));
     await page.waitForTimeout(450); const m1 = await pieza();
     await page.waitForTimeout(600); const m2 = await pieza();
-    comprobar(!m2.fuera && m1.t !== m2.t && /translate/.test(m1.t), 'cortina: a medias, las piezas van llegando (fotograma a medias)', [m1, m2]);
+    comprobar(!m2.fuera && m1.t !== m2.t && /matrix/.test(m1.t), 'cortina: a medias, las piezas van llegando (fotograma a medias)', [m1, m2]);
+    await page.waitForFunction(() => document.documentElement.classList.contains('rot-listo'), null, { timeout: 7000 });
+    const casa = await page.evaluate(() => { const a = document.getElementById('cort-rot').getBoundingClientRect(), b = document.getElementById('rot').getBoundingClientRect(); return [a.left - b.left, a.top - b.top, a.width - b.width].map((v) => Math.round(Math.abs(v) * 10) / 10); });
+    comprobar(casa.every((v) => v <= 2), 'cortina: el rótulo aterriza justo encima del de la portada (±2 px)', casa);
     await page.waitForFunction(() => document.documentElement.classList.contains('cortina-fuera'), null, { timeout: 7000 });
     comprobar(await page.evaluate(() => getComputedStyle(document.getElementById('cortina')).display === 'none' && scrollY === 0), 'cortina: se retira y deja la página arriba');
     // recargar a media página: vuelve arriba
